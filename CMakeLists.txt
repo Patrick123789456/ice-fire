@@ -1,5 +1,6 @@
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 cmake_minimum_required(VERSION 3.16)
-project(REPLACE_WITH_YOUR_PROJECT_NAME)
+project(ice-fire)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -30,11 +31,19 @@ list(TRANSFORM INCLUDE_FILES PREPEND ${INCLUDE_DIR}/)
 
 # file(GLOB_RECURSE SRC_FILES src/*)
 # file(GLOB_RECURSE HEADER_FILES include/*)
-
+find_package(OpenGL REQUIRED)
+#find_package(GLEW REQUIRED)
 add_executable(${PROJECT_NAME}
     ${SRC_DIR}/main.cpp
     ${SRC_FILES}
     ${HEADER_FILES}
+)
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/lib/sdl2/include
+    #${CMAKE_CURRENT_SOURCE_DIR}/PTSD/lib/glew/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/lib/imgui
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 if(MSVC)
@@ -55,6 +64,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/P
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(${PROJECT_NAME}
-    SDL2::SDL2main
-    PTSD
+    PRIVATE
+    PTSD           # 你的主要框架
+    SDL2::SDL2     # 實際的邏輯庫
+    SDL2::SDL2main # Windows 視窗程式需要的入口
+    OpenGL::GL     # 如果你有用到繪圖
+    #GLEW::GLEW
 )
