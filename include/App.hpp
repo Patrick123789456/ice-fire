@@ -45,6 +45,18 @@ private:
     std::shared_ptr<Util::GameObject> m_FireDoor;
     std::shared_ptr<Util::GameObject> m_Box;                //箱子
 
+    // ===== 新增：門動畫 =====
+    std::vector<std::string> m_IceDoorFrames;
+    std::vector<std::string> m_FireDoorFrames;
+
+    int m_IceDoorFrameIndex = 0;
+    int m_FireDoorFrameIndex = 0;
+
+    bool m_IceDoorOpening = false;
+    bool m_FireDoorOpening = false;
+
+    int m_DoorAnimCounter = 0;
+    int m_DoorAnimSpeed = 2;   // 數字越大，門動畫越慢
 
     // ===== 新增：紅色寶石 =====
     std::shared_ptr<Util::GameObject> m_RedDiamond;

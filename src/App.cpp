@@ -64,6 +64,12 @@ void App::Start() {
     m_ScoreText->m_Transform.translation = { 0.0f, 340.0f };
     m_Root->AddChild(m_ScoreText);
 
+    // ===== 門動畫圖片自動載入 =====
+    for (int i = 1; i <= 22; i++) {
+        m_IceDoorFrames.push_back(PIC_PATH + "ice_door/ice_door" + std::to_string(i) + ".png");
+        m_FireDoorFrames.push_back(PIC_PATH + "fire_door/fire_door" + std::to_string(i) + ".png");
+    }
+
     // 初始化第一關
     LoadLevel(1);
     m_CurrentState = State::UPDATE;
@@ -79,8 +85,20 @@ void App::LoadLevel(int level) {
     m_FireVelocityY = 0;
 
     // 設定門的位置
-    m_IceDoor->m_Transform.translation = { -300.0f, -171.0f };
-    m_FireDoor->m_Transform.translation = { 300.0f, -171.0f };
+    m_IceDoor->m_Transform.translation = { -300.0f, -141.0f };
+    m_FireDoor->m_Transform.translation = { 300.0f, -141.0f };
+
+    m_IceDoorFrameIndex = 0;
+    m_FireDoorFrameIndex = 0;
+
+    m_IceDoorOpening = false;
+    m_FireDoorOpening = false;
+
+    m_DoorAnimCounter = 0;
+
+    // 設回關門圖片
+    m_IceDoor->SetDrawable(std::make_shared<Util::Image>(m_IceDoorFrames[0]));
+    m_FireDoor->SetDrawable(std::make_shared<Util::Image>(m_FireDoorFrames[0]));
 
 
     //設定機關位置
@@ -293,6 +311,50 @@ void App::Update() {
 
         m_IceOnGround = iG; m_FireOnGround = fG;
 
+        //door
+        bool iceAtDoor = IsColliding(m_Ice, m_IceDoor);
+        bool fireAtDoor = IsColliding(m_Fire, m_FireDoor);
+
+        // 控制開關
+        m_IceDoorOpening = iceAtDoor;
+        m_FireDoorOpening = fireAtDoor;
+        m_DoorAnimCounter++;
+
+        if (m_DoorAnimCounter >= m_DoorAnimSpeed) {
+            m_DoorAnimCounter = 0;
+
+            // ===== 冰門 =====
+            if (m_IceDoorOpening) {
+                if (m_IceDoorFrameIndex < (int)m_IceDoorFrames.size() - 1) {
+                    m_IceDoorFrameIndex++;
+                }
+            } else {
+                if (m_IceDoorFrameIndex > 0) {
+                    m_IceDoorFrameIndex--;
+                }
+            }
+
+            m_IceDoor->SetDrawable(
+                std::make_shared<Util::Image>(m_IceDoorFrames[m_IceDoorFrameIndex])
+            );
+
+            // ===== 火門 =====
+            if (m_FireDoorOpening) {
+                if (m_FireDoorFrameIndex < (int)m_FireDoorFrames.size() - 1) {
+                    m_FireDoorFrameIndex++;
+                }
+            } else {
+                if (m_FireDoorFrameIndex > 0) {
+                    m_FireDoorFrameIndex--;
+                }
+            }
+
+            m_FireDoor->SetDrawable(
+                std::make_shared<Util::Image>(m_FireDoorFrames[m_FireDoorFrameIndex])
+            );
+        }
+
+
 
         //機關邏輯
         bool isPressed = IsColliding(m_Ice, m_Button) || 
@@ -310,7 +372,10 @@ void App::Update() {
         }
 
         // 5. 過關與死亡判定
-        if (IsColliding(m_Ice, m_IceDoor) && IsColliding(m_Fire, m_FireDoor)) {
+        bool iceDoorOpen = (m_IceDoorFrameIndex == (int)m_IceDoorFrames.size() - 1);
+        bool fireDoorOpen = (m_FireDoorFrameIndex == (int)m_FireDoorFrames.size() - 1);
+
+        if (iceAtDoor && fireAtDoor && iceDoorOpen && fireDoorOpen) {
             LoadLevel(m_CurrentLevelNum + 1);
             return;
         }
@@ -347,7 +412,6 @@ void App::Update() {
             m_BlueDiamond->m_Transform.translation.y =
                 m_BlueDiamondBasePos.y + std::sin(m_DiamondFloatTime) * m_DiamondFloatRange;
         }
-
 
 
         // 更新 UI
