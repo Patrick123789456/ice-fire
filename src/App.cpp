@@ -305,10 +305,9 @@ void App::Update() {
         }
         m_IceOnGround = iG; m_FireOnGround = fG;
 
-<<<<<<< HEAD
         // 機關邏輯
         bool isPressed = IsColliding(m_Ice, m_Button) || IsColliding(m_Fire, m_Button) || IsColliding(m_Box, m_Button);
-=======
+
         //door
         bool iceAtDoor = IsColliding(m_Ice, m_IceDoor);
         bool fireAtDoor = IsColliding(m_Fire, m_FireDoor);
@@ -354,12 +353,6 @@ void App::Update() {
 
 
 
-        //機關邏輯
-        bool isPressed = IsColliding(m_Ice, m_Button) || 
-                 IsColliding(m_Fire, m_Button) || 
-                 IsColliding(m_Box, m_Button);
-
->>>>>>> 0adfaafcc0d8afe9b310bfdebf36c3bf25281322
         if (isPressed) {
             m_Button->SetVisible(false);
             m_Gear->m_Transform.translation.x = m_GearOriginalPos.x + 50.0f;
@@ -452,6 +445,7 @@ void App::ClearLevel() {
         m_Root->RemoveChild(m_BlueDiamond);
         m_BlueDiamond = nullptr;
     }
+    
 }
 
 void App::End() { LOG_TRACE("End"); }
