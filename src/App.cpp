@@ -232,7 +232,7 @@ void App::Update() {
                     m_IceVelocityY = 0;
                     m_Ice->m_Transform.translation.y = objTop + (m_Ice->GetScaledSize().y / 2.0f);
                     iG = true;
-                } 
+                }
                 // 垂直判定：頂頭 (由下往上升) -> 這是新增的邏輯
                 else if (m_IceVelocityY > 0 && m_Ice->m_Transform.translation.y < obj->m_Transform.translation.y) {
                     m_IceVelocityY = 0;
