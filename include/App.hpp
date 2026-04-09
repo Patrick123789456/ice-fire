@@ -48,6 +48,8 @@ private:
     std::shared_ptr<Util::GameObject> m_Ice;
     std::shared_ptr<Util::GameObject> m_Fire;
     std::shared_ptr<Util::GameObject> m_Trap;
+    std::shared_ptr<Util::GameObject> m_IceTrap;  // Ice 碰到會死 (Trap1)
+    std::shared_ptr<Util::GameObject> m_FireTrap; // Fire 碰到會死 (Trap2)
     std::vector<std::shared_ptr<Util::GameObject>> m_Stones;
     std::shared_ptr<Util::GameObject> m_IceDoor;
     std::shared_ptr<Util::GameObject> m_FireDoor;
@@ -93,6 +95,10 @@ private:
     std::shared_ptr<Util::GameObject> m_Button;
     std::shared_ptr<Util::GameObject> m_Gear;
     glm::vec2 m_GearOriginalPos;
+    std::shared_ptr<Util::GameObject> m_Switch;
+    std::shared_ptr<Util::GameObject> m_Gear2;
+    glm::vec2 m_Gear2OriginalPos;
+    bool m_IsSwitchOn = false;  // 開關狀態
 
     float m_Gravity = 0.4f;
     float m_JumpForce = 12.0f;

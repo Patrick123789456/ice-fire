@@ -119,6 +119,10 @@ void App::Start() {
 
     // 3. 地板與陷阱
     m_Trap = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "trap0.png"), -1.0f);
+    m_IceTrap = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "trap1.png"), -1.0f);
+    m_FireTrap = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "trap2.png"), -1.0f);
+    m_Root->AddChild(m_IceTrap);
+    m_Root->AddChild(m_FireTrap);
     m_Root->AddChild(m_Trap);
 
     // 4. 門 (暫時放在這裡，之後會移到 LoadLevel)
@@ -133,7 +137,7 @@ void App::Start() {
     std::string font = FONT_PATH + "arial.ttf";
     m_IcePosText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 20, "Ice: (0, 0)", Util::Color(51,153,255)), 10.0f);
     m_IcePosText->SetPivot({-1.0f, 1.0f});
-    m_IcePosText->m_Transform.translation = { -570.0f, 340.0f };
+    m_IcePosText->m_Transform.translation = { -560.0f, 340.0f };
     m_Root->AddChild(m_IcePosText);
 
     m_FirePosText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 20, "Fire: (0, 0)", Util::Color(255, 0, 0)), 10.0f);
@@ -164,38 +168,6 @@ void App::Start() {
 void App::LoadLevel(int level) {
     ClearLevel(); // 清理舊有的物件
 
-    // 重置角色位置
-    m_Ice->m_Transform.translation = { -500.0f, 0.0f };
-    m_Fire->m_Transform.translation = { 500.0f, 0.0f };
-    m_IceVelocityY = 0;
-    m_FireVelocityY = 0;
-
-    // 設定門的位置
-    m_IceDoor->m_Transform.translation = { -300.0f, -141.0f };
-    m_FireDoor->m_Transform.translation = { 300.0f, -141.0f };
-
-    m_IceDoorFrameIndex = 0;
-    m_FireDoorFrameIndex = 0;
-
-    m_IceDoorOpening = false;
-    m_FireDoorOpening = false;
-
-    m_DoorAnimCounter = 0;
-
-    // 設回關門圖片
-    m_IceDoor->SetDrawable(std::make_shared<Util::Image>(m_IceDoorFrames[0]));
-    m_FireDoor->SetDrawable(std::make_shared<Util::Image>(m_FireDoorFrames[0]));
-
-
-    //設定機關位置
-    m_Button = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "button1.png"), -1.5f);
-    m_Button->m_Transform.translation = { 150.0f, -185.0f }; // 放在地板上
-    m_Root->AddChild(m_Button);
-
-    m_Gear = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear1.png"), -1.0f);
-    m_Gear->m_Transform.translation = { 400.0f, -100.0f }; // 機關位置
-    m_GearOriginalPos = m_Gear->m_Transform.translation;
-    m_Root->AddChild(m_Gear);
 
     // 依照關卡編號設定地形 (目前第二關與第一關相同)
     if (level == 1 || level == 2) {
@@ -205,7 +177,41 @@ void App::LoadLevel(int level) {
             m_Stones.push_back(stone);
             m_Root->AddChild(stone);
         }
+        // 重置角色位置
+        m_Ice->m_Transform.translation = { -500.0f, 0.0f };
+        m_Fire->m_Transform.translation = { 500.0f, 0.0f };
+        m_IceVelocityY = 0;
+        m_FireVelocityY = 0;
+
+        // 設定門的位置
+        m_IceDoor->m_Transform.translation = { -300.0f, -141.0f };
+        m_FireDoor->m_Transform.translation = { 300.0f, -141.0f };
+
+        m_IceDoorFrameIndex = 0;
+        m_FireDoorFrameIndex = 0;
+
+        m_IceDoorOpening = false;
+        m_FireDoorOpening = false;
+
+        m_DoorAnimCounter = 0;
+
+        // 設回關門圖片
+        m_IceDoor->SetDrawable(std::make_shared<Util::Image>(m_IceDoorFrames[0]));
+        m_FireDoor->SetDrawable(std::make_shared<Util::Image>(m_FireDoorFrames[0]));
+        //設定陷阱位置
         m_Trap->m_Transform.translation = { 0.0f, -171.0f };
+        m_IceTrap->m_Transform.translation = { -350.0f, -171.0f };
+        m_FireTrap->m_Transform.translation = { 350.0f, -171.0f };
+
+        //設定機關位置
+        m_Button = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "button1.png"), -1.5f);
+        m_Button->m_Transform.translation = { 150.0f, -185.0f }; // 放在地板上
+        m_Root->AddChild(m_Button);
+
+        m_Gear = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear1.png"), -1.0f);
+        m_Gear->m_Transform.translation = { 400.0f, -100.0f }; // 機關位置
+        m_GearOriginalPos = m_Gear->m_Transform.translation;
+        m_Root->AddChild(m_Gear);
 
         if (!m_Box) {
             m_Box = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "box.png"), 0.1f); // 層級比角色高一點
@@ -213,7 +219,18 @@ void App::LoadLevel(int level) {
         }
         m_Box->m_Transform.translation = { -100.0f, -171.0f };
     }
+    m_Switch = std::make_shared<Util::GameObject>(
+        std::make_shared<Util::Image>(PIC_PATH + "switch1_1.png"), -1.5f
+    );
+    m_Switch->m_Transform.translation = { -200.0f, -185.0f };
+    m_Root->AddChild(m_Switch);
 
+    m_Gear2 = std::make_shared<Util::GameObject>(
+        std::make_shared<Util::Image>(PIC_PATH + "gear2.png"), -1.0f
+    );
+    m_Gear2->m_Transform.translation = { -400.0f, -50.0f };
+    m_Gear2OriginalPos = m_Gear2->m_Transform.translation;
+    m_Root->AddChild(m_Gear2);
     //diamond
     m_Score = 0;
     m_RedDiamondCollected = false;
@@ -279,7 +296,7 @@ void App::Update() {
     if (m_CurrentState == State::DEAD) {
         if (Util::Input::IsKeyDown(Util::Keycode::R)) {
             m_DeadScreen->SetVisible(false);
-            LoadLevel(m_CurrentLevelNum); 
+            LoadLevel(m_CurrentLevelNum);
             m_CurrentState = State::UPDATE;
         }
         m_Root->Update();
@@ -334,7 +351,7 @@ void App::Update() {
                     m_Box->m_Transform.translation.x += finalDx;
                     bool hitSomething = false;
                     for (auto& s : m_Stones) { if (IsColliding(m_Box, s)) { hitSomething = true; break; } }
-                    if (IsColliding(m_Box, m_Gear)) hitSomething = true;
+                    if (IsColliding(m_Box, m_Gear) || IsColliding(m_Box, m_Gear2)) hitSomething = true;
                     if (hitSomething) {
                         m_Box->m_Transform.translation.x -= finalDx;
                         if (isSandwich) m_Fire->m_Transform.translation.x -= finalDx;
@@ -355,7 +372,7 @@ void App::Update() {
                     m_Box->m_Transform.translation.x += finalDx;
                     bool hitSomething = false;
                     for (auto& s : m_Stones) { if (IsColliding(m_Box, s)) { hitSomething = true; break; } }
-                    if (IsColliding(m_Box, m_Gear)) hitSomething = true;
+                    if (IsColliding(m_Box, m_Gear) || IsColliding(m_Box, m_Gear2)) hitSomething = true;
                     if (hitSomething) {
                         m_Box->m_Transform.translation.x -= finalDx;
                         if (isSandwich) m_Ice->m_Transform.translation.x -= finalDx;
@@ -371,11 +388,24 @@ void App::Update() {
         auto handleHorizontalObstacle = [&](std::shared_ptr<Util::GameObject> character, float& dx) {
             if (dx == 0) return;
             character->m_Transform.translation.x += dx;
-            if (IsColliding(character, m_Gear)) { character->m_Transform.translation.x -= dx; dx = 0; }
+            if (IsColliding(character, m_Gear)|| IsColliding(character, m_Gear2)) { character->m_Transform.translation.x -= dx; dx = 0; }
             else { character->m_Transform.translation.x -= dx; }
         };
         handleHorizontalObstacle(m_Ice, iceDx);
         handleHorizontalObstacle(m_Fire, fireDx);
+
+        /* //擴充水平阻擋
+        auto handleHorizontalObstacleAll = [&](std::shared_ptr<Util::GameObject> character, float& dx) {
+            if (dx == 0) return;
+            character->m_Transform.translation.x += dx;
+            if (IsColliding(character, m_Gear) || IsColliding(character, m_Gear2)) { // 加入 Gear2
+                character->m_Transform.translation.x -= dx;
+                dx = 0;
+            } else {
+                character->m_Transform.translation.x -= dx;
+            }
+        };
+ */ //目前箱子不會撞到gear，所以先不加入gear2的判定(其實1也用不到)
 
         // 執行最後位移
         m_IceVelocityY -= m_Gravity;
@@ -388,6 +418,7 @@ void App::Update() {
         std::vector<std::shared_ptr<Util::GameObject>> collisionGroup = m_Stones;
         collisionGroup.push_back(m_Box);
         collisionGroup.push_back(m_Gear);
+        collisionGroup.push_back(m_Gear2);
 
         for (const auto& obj : collisionGroup) {
             if (!obj) continue;
@@ -426,10 +457,51 @@ void App::Update() {
 
         // 機關邏輯
         bool isPressed = IsColliding(m_Ice, m_Button) || IsColliding(m_Fire, m_Button) || IsColliding(m_Box, m_Button);
+        if (isPressed) {
+            m_Button->SetVisible(false);
+            m_Gear->m_Transform.translation.x = m_GearOriginalPos.x + 50.0f;
+        } else {
+            m_Button->SetVisible(true);
+            m_Gear->m_Transform.translation.x = m_GearOriginalPos.x;
+        }
 
         //door
         bool iceAtDoor = IsColliding(m_Ice, m_IceDoor);
         bool fireAtDoor = IsColliding(m_Fire, m_FireDoor);
+
+
+        //拉桿邏輯：判斷角色碰到拉桿的哪一側
+        auto handleSwitch = [&](std::shared_ptr<Util::GameObject> character, float dx, bool isIce) {
+            if (IsColliding(character, m_Switch)) {
+                float charX = character->m_Transform.translation.x;
+                float swX = m_Switch->m_Transform.translation.x;
+
+                bool pushingRight = isIce ? keys[SDL_SCANCODE_D] : keys[SDL_SCANCODE_RIGHT];
+                bool pushingLeft = isIce ? keys[SDL_SCANCODE_A] : keys[SDL_SCANCODE_LEFT];
+
+
+                if (charX < swX && dx > 0 && pushingRight && m_IsSwitchOn) {
+                    m_IsSwitchOn = false;
+                    m_Switch->SetDrawable(std::make_shared<Util::Image>(PIC_PATH + "switch1_1.png"));
+                }
+                else if (charX > swX && dx < 0 && pushingLeft && !m_IsSwitchOn) {
+                    m_IsSwitchOn = true;
+                    m_Switch->SetDrawable(std::make_shared<Util::Image>(PIC_PATH + "switch1_2.png"));
+                }
+            }
+        };
+
+        // 呼叫時傳入 dx 與身份標記
+        handleSwitch(m_Ice, iceDx, true);
+        handleSwitch(m_Fire, fireDx, false);
+
+
+        // 根據拉桿狀態移動 Gear2
+        if (m_IsSwitchOn) {
+            m_Gear2->m_Transform.translation.x = m_Gear2OriginalPos.x - 50.0f;
+        } else {
+            m_Gear2->m_Transform.translation.x = m_Gear2OriginalPos.x;
+        }
 
         // 控制開關
         m_IceDoorOpening = iceAtDoor;
@@ -470,25 +542,29 @@ void App::Update() {
             );
         }
 
-
-
-        if (isPressed) {
-            m_Button->SetVisible(false);
-            m_Gear->m_Transform.translation.x = m_GearOriginalPos.x + 50.0f;
-        } else {
-            m_Button->SetVisible(true);
-            m_Gear->m_Transform.translation.x = m_GearOriginalPos.x;
-        }
-
         // 5. 過關與死亡判定
         bool iceDoorOpen = (m_IceDoorFrameIndex == (int)m_IceDoorFrames.size() - 1);
         bool fireDoorOpen = (m_FireDoorFrameIndex == (int)m_FireDoorFrames.size() - 1);
 
-        if (iceAtDoor && fireAtDoor && iceDoorOpen && fireDoorOpen) {
+        // 修正後的過關判定
+        if (iceDoorOpen && fireDoorOpen && IsColliding(m_Ice, m_IceDoor) && IsColliding(m_Fire, m_FireDoor)) {
             LoadLevel(m_CurrentLevelNum + 1);
             return;
         }
-        if (IsColliding(m_Ice, m_Trap) || IsColliding(m_Fire, m_Trap)) {
+
+        bool iceDead = false;
+        bool fireDead = false;
+
+        // 情況 A：Ice 的死亡判定
+        if (IsColliding(m_Ice, m_Trap)) iceDead = true;
+        if (IsColliding(m_Ice, m_IceTrap)) iceDead = true;
+
+        // 情況 B：Fire 的死亡判定
+        if (IsColliding(m_Fire, m_Trap)) fireDead = true;
+        if (IsColliding(m_Fire, m_FireTrap)) fireDead = true;
+
+        // 執行死亡效果
+        if (iceDead || fireDead) {
             m_CurrentState = State::DEAD;
             m_DeadScreen->SetVisible(true);
         }
@@ -544,15 +620,20 @@ void App::ClearLevel() {
     }
     m_Stones.clear();
 
-    if (m_Button) {
-        m_Root->RemoveChild(m_Button);
-        m_Button = nullptr;
-    }
+    auto cleanup = [&](std::shared_ptr<Util::GameObject>& obj) {
+        if (obj) {
+            m_Root->RemoveChild(obj);
+            obj = nullptr;
+        }
+    };
 
-    if (m_Gear) {
-        m_Root->RemoveChild(m_Gear);
-        m_Gear = nullptr;
-    }
+    cleanup(m_Button);
+    cleanup(m_Gear);
+    cleanup(m_Gear2);
+    cleanup(m_Switch);
+    cleanup(m_RedDiamond);
+    cleanup(m_BlueDiamond);
+
 
     if (m_RedDiamond) {
         m_Root->RemoveChild(m_RedDiamond);
@@ -571,6 +652,9 @@ void App::ClearLevel() {
     }
     m_Slopes.clear();
     
+
+    m_IsSwitchOn = false;
+
 }
 
 void App::End() { LOG_TRACE("End"); }
