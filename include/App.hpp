@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include "Slope.h"
 
 class App {
 public:
@@ -25,6 +26,13 @@ public:
     void End();
 
 private:
+    //slope
+    std::vector<Slope> m_Slopes;
+
+    float m_FootOffset = 32.0f;      // 角色中心到腳底距離，要自己微調
+    float m_SlopeTolerance = 10.0f;  // 站在斜坡上的容許誤差
+    float m_SlopeSnapHeight = 16.0f;   // 只吸附離坡面不遠的角色
+
     // 碰撞偵測：player 碰撞 stone 或 trap
     bool IsColliding(const std::shared_ptr<Util::GameObject>& player, const std::shared_ptr<Util::GameObject>& target);
     // 關卡管理
@@ -94,7 +102,7 @@ private:
 
     float m_Gravity = 0.4f;
     float m_JumpForce = 12.0f;
-    float m_MoveSpeed = 5.0f;
+    float m_MoveSpeed = 3.0f;
     float m_BoxMoveSpeedLimit = 3.0f;
 
     float m_IceVelocityY = 0.0f;
@@ -105,6 +113,21 @@ private:
 
     bool m_IceOnGround = false;
     bool m_FireOnGround = false;
+
+    void AddSlope(const std::string& imagePath,
+              const glm::vec2& imagePos,
+              const glm::vec2& imageScale,
+              const glm::vec2& localStart,
+              const glm::vec2& localEnd,
+              float slideSpeed,
+              float moveFactor,
+              bool isSolid = true,
+              float zIndex = -1.0f);
+
+    void ApplySlopeToPlayer(const std::shared_ptr<Util::GameObject>& player,
+                            float& velocityY,
+                            bool& onGround,
+                            float& dx);
 };
 
 #endif

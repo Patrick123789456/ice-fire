@@ -10,6 +10,92 @@
 const std::string PIC_PATH = "../Resources/picture/";
 const std::string FONT_PATH = "../Resources/font/";
 
+void App::AddSlope(const std::string& imagePath,
+                   const glm::vec2& imagePos,
+                   const glm::vec2& imageScale,
+                   const glm::vec2& localStart,
+                   const glm::vec2& localEnd,
+                   float slideSpeed,
+                   float moveFactor,
+                   bool isSolid,
+                   float zIndex) {
+    auto image = std::make_shared<Util::GameObject>(
+        std::make_shared<Util::Image>(imagePath), zIndex
+    );
+
+    image->m_Transform.translation = imagePos;
+    image->m_Transform.scale = imageScale;
+    m_Root->AddChild(image);
+
+    glm::vec2 start = imagePos + glm::vec2(localStart.x * imageScale.x,
+                                       localStart.y * imageScale.y);
+
+    glm::vec2 end = imagePos + glm::vec2(localEnd.x * imageScale.x,
+                                         localEnd.y * imageScale.y);
+
+    m_Slopes.emplace_back(image, start, end, slideSpeed, moveFactor, isSolid);
+}
+
+void App::ApplySlopeToPlayer(const std::shared_ptr<Util::GameObject>& player,
+                             float& velocityY,
+                             bool& onGround,
+                             float& dx) {
+    float currentX = player->m_Transform.translation.x;
+    float currentY = player->m_Transform.translation.y;
+    float footY = currentY - m_FootOffset;
+
+    for (const auto& slope : m_Slopes) {
+        if (!slope.IsSolid()) continue;
+
+        float minX = std::min(slope.GetStartX(), slope.GetEndX());
+        float maxX = std::max(slope.GetStartX(), slope.GetEndX());
+
+        float currentSurfaceY = slope.GetSurfaceY(currentX);
+        bool alreadyOnSlope =
+            currentX >= minX && currentX <= maxX &&
+            std::abs(footY - currentSurfaceY) <= m_SlopeTolerance;
+
+        float moveDx = dx;
+        if (std::abs(moveDx) >= 0.001f) {
+            moveDx *= slope.GetMoveFactor();
+        } else {
+            moveDx = slope.IsLeftLowRightHigh()
+                     ? -slope.GetSlideSpeed()
+                     :  slope.GetSlideSpeed();
+        }
+
+        float nextX = currentX + moveDx;
+        if (nextX < minX || nextX > maxX) {
+            if (alreadyOnSlope) {
+                player->m_Transform.translation.x = nextX;
+                return;
+            }
+            continue;
+        }
+
+        float nextSurfaceY = slope.GetSurfaceY(nextX);
+        float nextFootY = footY + velocityY;
+
+        bool crossedSlope =
+            footY >= nextSurfaceY &&   // 上一幀在坡上
+            nextFootY <= nextSurfaceY; // 下一幀在坡下
+
+        bool canSnapToSlope =
+            nextFootY >= nextSurfaceY - m_SlopeTolerance &&
+            nextFootY <= nextSurfaceY + m_SlopeSnapHeight;
+
+        if (alreadyOnSlope || canSnapToSlope || crossedSlope) {
+            onGround = true;
+            velocityY = 0.0f;
+            player->m_Transform.translation.x = nextX;
+            player->m_Transform.translation.y = nextSurfaceY + m_FootOffset;
+            return;
+        }
+    }
+
+    player->m_Transform.translation.x += dx;
+}
+
 void App::Start() {
     m_Root = std::make_shared<Util::Renderer>();
 
@@ -146,6 +232,7 @@ void App::LoadLevel(int level) {
     m_Gear2OriginalPos = m_Gear2->m_Transform.translation;
     m_Root->AddChild(m_Gear2);
     //diamond
+    m_Score = 0;
     m_RedDiamondCollected = false;
     m_BlueDiamondCollected = false;
     m_DiamondFloatTime = 0.0f;
@@ -167,6 +254,36 @@ void App::LoadLevel(int level) {
     m_BlueDiamond->SetVisible(true);
     m_Root->AddChild(m_BlueDiamond);
     m_BlueDiamondBasePos = m_BlueDiamond->m_Transform.translation;
+
+    AddSlope(PIC_PATH + "l_tri.png",
+         {500.0f, -179.0f},
+         {1.2f, 1.2f},
+         {-14.0f, -14.0f},   // localStart
+         { 14.0f,14.0f},   // localEnd
+         0.2f,              // slideSpeed
+         0.2f,              // moveFactor
+         true);             // isSolid
+
+    AddSlope(PIC_PATH + "r_tri.png",
+         {100.0f, -179.0f},
+         {1.2f, 1.2f},
+         {-14.0f,14.0f},   // localStart
+         { 14.0f, -14.0f},   // localEnd
+         0.2f,              // slideSpeed
+         0.1f,              // moveFactor
+         true);             // isSolid
+
+    AddSlope(PIC_PATH + "r_tri.png",
+         {75.0f, -152.0f},
+         {1.2f, 1.2f},
+         {-14.0f,14.0f},   // localStart
+         { 14.0f, -14.0f},   // localEnd
+         0.2f,              // slideSpeed
+         0.1f,              // moveFactor
+         true);
+
+
+
 
     m_CurrentLevelNum = level;
 }
@@ -292,8 +409,8 @@ void App::Update() {
         // 執行最後位移
         m_IceVelocityY -= m_Gravity;
         m_FireVelocityY -= m_Gravity;
-        m_Ice->m_Transform.translation += glm::vec2(iceDx, m_IceVelocityY);
-        m_Fire->m_Transform.translation += glm::vec2(fireDx, m_FireVelocityY);
+        m_Ice->m_Transform.translation.y += m_IceVelocityY;
+        m_Fire->m_Transform.translation.y += m_FireVelocityY;
 
         // 4. 地板與頭部碰撞判定 (包含機關阻擋)
         bool iG = false, fG = false;
@@ -334,6 +451,8 @@ void App::Update() {
             }
         }
         m_IceOnGround = iG; m_FireOnGround = fG;
+        ApplySlopeToPlayer(m_Ice, m_IceVelocityY, m_IceOnGround, iceDx);
+        ApplySlopeToPlayer(m_Fire, m_FireVelocityY, m_FireOnGround, fireDx);
 
         // 機關邏輯
         bool isPressed = IsColliding(m_Ice, m_Button) || IsColliding(m_Fire, m_Button) || IsColliding(m_Box, m_Button);
@@ -514,7 +633,27 @@ void App::ClearLevel() {
     cleanup(m_RedDiamond);
     cleanup(m_BlueDiamond);
 
+
+    if (m_RedDiamond) {
+        m_Root->RemoveChild(m_RedDiamond);
+        m_RedDiamond = nullptr;
+    }
+
+    if (m_BlueDiamond) {
+        m_Root->RemoveChild(m_BlueDiamond);
+        m_BlueDiamond = nullptr;
+    }
+
+    for (auto& slope : m_Slopes) {
+        if (slope.GetImage()) {
+            m_Root->RemoveChild(slope.GetImage());
+        }
+    }
+    m_Slopes.clear();
+    
+
     m_IsSwitchOn = false;
+
 }
 
 void App::End() { LOG_TRACE("End"); }
