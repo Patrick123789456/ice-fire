@@ -169,7 +169,6 @@ void App::LoadLevel(int level) {
     m_BlueDiamondBasePos = m_BlueDiamond->m_Transform.translation;
 
     m_CurrentLevelNum = level;
-    LOG_INFO("Loading Level " + std::to_string(level));
 }
 
 void App::Update() {
