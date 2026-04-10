@@ -1,0 +1,262 @@
+#include "App.hpp"
+#include "Util/GameObject.hpp"
+#include "Util/Image.hpp"
+#include "Util/Text.hpp"
+#include <cmath>
+#include <algorithm>
+#include <vector>
+#include "slope.hpp"
+
+
+bool App::IsColliding(const std::shared_ptr<Util::GameObject>& p, const std::shared_ptr<Util::GameObject>& t) {
+
+    glm::vec2 pP = p->m_Transform.translation;
+    glm::vec2 pS = p->GetScaledSize();
+    glm::vec2 tP = t->m_Transform.translation;
+    glm::vec2 tS = t->GetScaledSize();
+
+    // AABB 碰撞演算法 (保留你原始的 2.1f 修正係數)
+    return (pP.x - pS.x / 2.1f < tP.x + tS.x / 2.0f &&
+            pP.x + pS.x / 2.1f > tP.x - tS.x / 2.0f &&
+            pP.y - pS.y / 2.0f < tP.y + tS.y / 2.0f &&
+            pP.y + pS.y / 2.0f > tP.y - tS.y / 2.0f);
+}
+
+void App::HandleMechanics(float iceDx, float fireDx, const Uint8* keys) {
+    (void)keys; // 消除 unused parameter 'keys' 警告
+
+    // 2. 處理水平推箱子
+    auto handleAdvancedPush = [&]() {
+        const float PUSH_SPEED = 3.5f;
+        const float SANDWICH_SPEED = 2.0f;
+
+        if (iceDx != 0 && IsColliding(m_Ice, m_Box)) {
+            float icePos = m_Ice->m_Transform.translation.x;
+            float boxPos = m_Box->m_Transform.translation.x;
+            bool isPushing = (icePos < boxPos && iceDx > 0) || (icePos > boxPos && iceDx < 0);
+            if (isPushing) {
+                float finalDx = (iceDx > 0 ? 1.0f : -1.0f);
+                bool isSandwich = IsColliding(m_Box, m_Fire);
+                if (isSandwich) { finalDx *= SANDWICH_SPEED; m_Fire->m_Transform.translation.x += finalDx; }
+                else { finalDx *= PUSH_SPEED; }
+                m_Box->m_Transform.translation.x += finalDx;
+                bool hitSomething = false;
+                for (auto& s : m_Stones) { if (IsColliding(m_Box, s)) { hitSomething = true; break; } }
+                if (IsColliding(m_Box, m_Gear) || IsColliding(m_Box, m_Gear2)) hitSomething = true;
+                if (hitSomething) {
+                    m_Box->m_Transform.translation.x -= finalDx;
+                    if (isSandwich) m_Fire->m_Transform.translation.x -= finalDx;
+                    iceDx = 0;
+                } else { iceDx = finalDx; if (isSandwich) fireDx = finalDx; }
+            }
+        }
+
+        if (fireDx != 0 && IsColliding(m_Fire, m_Box)) {
+            float firePos = m_Fire->m_Transform.translation.x;
+            float boxPos = m_Box->m_Transform.translation.x;
+            bool isPushing = (firePos < boxPos && fireDx > 0) || (firePos > boxPos && fireDx < 0);
+            if (isPushing) {
+                float finalDx = (fireDx > 0 ? 1.0f : -1.0f);
+                bool isSandwich = IsColliding(m_Box, m_Ice);
+                if (isSandwich) { finalDx *= SANDWICH_SPEED; m_Ice->m_Transform.translation.x += finalDx; }
+                else { finalDx *= PUSH_SPEED; }
+                m_Box->m_Transform.translation.x += finalDx;
+                bool hitSomething = false;
+                for (auto& s : m_Stones) { if (IsColliding(m_Box, s)) { hitSomething = true; break; } }
+                if (IsColliding(m_Box, m_Gear) || IsColliding(m_Box, m_Gear2)) hitSomething = true;
+                if (hitSomething) {
+                    m_Box->m_Transform.translation.x -= finalDx;
+                    if (isSandwich) m_Ice->m_Transform.translation.x -= finalDx;
+                    fireDx = 0;
+                } else { fireDx = finalDx; if (isSandwich) iceDx = finalDx; }
+            }
+        }
+    };
+
+    handleAdvancedPush();
+
+    // 3. 處理與機關(Gear)的水平阻擋
+    auto handleHorizontalObstacle = [&](std::shared_ptr<Util::GameObject> character, float& dx) {
+        if (dx == 0) return;
+        character->m_Transform.translation.x += dx;
+        if (IsColliding(character, m_Gear)|| IsColliding(character, m_Gear2)) { character->m_Transform.translation.x -= dx; dx = 0; }
+        else { character->m_Transform.translation.x -= dx; }
+    };
+    handleHorizontalObstacle(m_Ice, iceDx);
+    handleHorizontalObstacle(m_Fire, fireDx);
+
+    /* //擴充水平阻擋
+    auto handleHorizontalObstacleAll = [&](std::shared_ptr<Util::GameObject> character, float& dx) {
+        if (dx == 0) return;
+        character->m_Transform.translation.x += dx;
+        if (IsColliding(character, m_Gear) || IsColliding(character, m_Gear2)) { // 加入 Gear2
+            character->m_Transform.translation.x -= dx;
+            dx = 0;
+        } else {
+            character->m_Transform.translation.x -= dx;
+        }
+    };
+*/ //目前箱子不會撞到gear，所以先不加入gear2的判定(其實1也用不到)
+
+    // 執行最後位移
+    m_IceVelocityY -= m_Gravity;
+    m_FireVelocityY -= m_Gravity;
+    m_Ice->m_Transform.translation.y += m_IceVelocityY;
+    m_Fire->m_Transform.translation.y += m_FireVelocityY;
+
+    // 4. 地板與頭部碰撞判定 (包含機關阻擋)
+    bool iG = false, fG = false;
+    std::vector<std::shared_ptr<Util::GameObject>> collisionGroup = m_Stones;
+    if (m_Box) collisionGroup.push_back(m_Box);
+    if (m_Gear) collisionGroup.push_back(m_Gear);
+    if (m_Gear2) collisionGroup.push_back(m_Gear2);
+
+    for (const auto& obj : collisionGroup) {
+        if (!obj) continue;
+        float objTop = obj->m_Transform.translation.y + (obj->GetScaledSize().y / 2.0f);
+        float objBottom = obj->m_Transform.translation.y - (obj->GetScaledSize().y / 2.0f);
+
+        if (IsColliding(m_Ice, obj)) {
+            // 垂直判定：腳踏 (由上往下掉)
+            if (m_IceVelocityY <= 0 && m_Ice->m_Transform.translation.y > obj->m_Transform.translation.y) {
+                m_IceVelocityY = 0;
+                m_Ice->m_Transform.translation.y = objTop + (m_Ice->GetScaledSize().y / 2.0f);
+                iG = true;
+            }
+            // 垂直判定：頂頭 (由下往上升) -> 這是新增的邏輯
+            else if (m_IceVelocityY > 0 && m_Ice->m_Transform.translation.y < obj->m_Transform.translation.y) {
+                m_IceVelocityY = 0;
+                m_Ice->m_Transform.translation.y = objBottom - (m_Ice->GetScaledSize().y / 2.0f);
+            }
+        }
+
+        if (IsColliding(m_Fire, obj)) {
+            if (m_FireVelocityY <= 0 && m_Fire->m_Transform.translation.y > obj->m_Transform.translation.y) {
+                m_FireVelocityY = 0;
+                m_Fire->m_Transform.translation.y = objTop + (m_Fire->GetScaledSize().y / 2.0f);
+                fG = true;
+            }
+            else if (m_FireVelocityY > 0 && m_Fire->m_Transform.translation.y < obj->m_Transform.translation.y) {
+                m_FireVelocityY = 0;
+                m_Fire->m_Transform.translation.y = objBottom - (m_Fire->GetScaledSize().y / 2.0f);
+            }
+        }
+    }
+    m_IceOnGround = iG; m_FireOnGround = fG;
+    ApplySlopeToPlayer(m_Ice, m_IceVelocityY, m_IceOnGround, iceDx);
+    ApplySlopeToPlayer(m_Fire, m_FireVelocityY, m_FireOnGround, fireDx);
+
+    // 機關邏輯
+    bool isPressed = IsColliding(m_Ice, m_Button) || IsColliding(m_Fire, m_Button) || (m_Box && IsColliding(m_Box, m_Button));
+    if (isPressed) {
+        m_Button->SetVisible(false);
+        m_Gear->m_Transform.translation.x = m_GearOriginalPos.x + 50.0f;
+    } else {
+        m_Button->SetVisible(true);
+        m_Gear->m_Transform.translation.x = m_GearOriginalPos.x;
+    }
+
+    //door
+    bool iceAtDoor = IsColliding(m_Ice, m_IceDoor);
+    bool fireAtDoor = IsColliding(m_Fire, m_FireDoor);
+
+
+    //拉桿邏輯：判斷角色碰到拉桿的哪一側
+    auto handleSwitch = [&](std::shared_ptr<Util::GameObject> character, float dx, bool isIce) {
+        if (IsColliding(character, m_Switch)) {
+            float charX = character->m_Transform.translation.x;
+            float swX = m_Switch->m_Transform.translation.x;
+
+            bool pushingRight = isIce ? keys[SDL_SCANCODE_D] : keys[SDL_SCANCODE_RIGHT];
+            bool pushingLeft = isIce ? keys[SDL_SCANCODE_A] : keys[SDL_SCANCODE_LEFT];
+
+
+            if (charX < swX && dx > 0 && pushingRight && m_IsSwitchOn) {
+                m_IsSwitchOn = false;
+                m_Switch->SetDrawable(std::make_shared<Util::Image>(PIC_PATH + "switch1_1.png"));
+            }
+            else if (charX > swX && dx < 0 && pushingLeft && !m_IsSwitchOn) {
+                m_IsSwitchOn = true;
+                m_Switch->SetDrawable(std::make_shared<Util::Image>(PIC_PATH + "switch1_2.png"));
+            }
+        }
+    };
+
+    // 呼叫時傳入 dx 與身份標記
+    handleSwitch(m_Ice, iceDx, true);
+    handleSwitch(m_Fire, fireDx, false);
+
+
+    // 根據拉桿狀態移動 Gear2
+    if (m_IsSwitchOn) {
+        m_Gear2->m_Transform.translation.x = m_Gear2OriginalPos.x - 50.0f;
+    } else {
+        m_Gear2->m_Transform.translation.x = m_Gear2OriginalPos.x;
+    }
+
+    // 控制開關
+    m_IceDoorOpening = iceAtDoor;
+    m_FireDoorOpening = fireAtDoor;
+    m_DoorAnimCounter++;
+
+    if (m_DoorAnimCounter >= m_DoorAnimSpeed) {
+        m_DoorAnimCounter = 0;
+
+        // ===== 冰門 =====
+        if (m_IceDoorOpening) {
+            if (m_IceDoorFrameIndex < (int)m_IceDoorFrames.size() - 1) {
+                m_IceDoorFrameIndex++;
+            }
+        } else {
+            if (m_IceDoorFrameIndex > 0) {
+                m_IceDoorFrameIndex--;
+            }
+        }
+
+        m_IceDoor->SetDrawable(
+            std::make_shared<Util::Image>(m_IceDoorFrames[m_IceDoorFrameIndex])
+        );
+
+        // ===== 火門 =====
+        if (m_FireDoorOpening) {
+            if (m_FireDoorFrameIndex < (int)m_FireDoorFrames.size() - 1) {
+                m_FireDoorFrameIndex++;
+            }
+        } else {
+            if (m_FireDoorFrameIndex > 0) {
+                m_FireDoorFrameIndex--;
+            }
+        }
+
+        m_FireDoor->SetDrawable(
+            std::make_shared<Util::Image>(m_FireDoorFrames[m_FireDoorFrameIndex])
+        );
+    }
+
+    // 5. 過關與死亡判定
+    bool iceDoorOpen = (m_IceDoorFrameIndex == (int)m_IceDoorFrames.size() - 1);
+    bool fireDoorOpen = (m_FireDoorFrameIndex == (int)m_FireDoorFrames.size() - 1);
+
+    // 修正後的過關判定
+    if (iceDoorOpen && fireDoorOpen && IsColliding(m_Ice, m_IceDoor) && IsColliding(m_Fire, m_FireDoor)) {
+        LoadLevel(m_CurrentLevelNum + 1);
+        return;
+    }
+
+    bool iceDead = false;
+    bool fireDead = false;
+
+    // 情況 A：Ice 的死亡判定
+    if (IsColliding(m_Ice, m_Trap)) iceDead = true;
+    if (IsColliding(m_Ice, m_IceTrap)) iceDead = true;
+
+    // 情況 B：Fire 的死亡判定
+    if (IsColliding(m_Fire, m_Trap)) fireDead = true;
+    if (IsColliding(m_Fire, m_FireTrap)) fireDead = true;
+
+    // 執行死亡效果
+    if (iceDead || fireDead) {
+        m_CurrentState = State::DEAD;
+        m_DeadScreen->SetVisible(true);
+    }
+}

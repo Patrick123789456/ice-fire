@@ -37,10 +37,14 @@ add_executable(${PROJECT_NAME}
     ${SRC_DIR}/main.cpp
     ${SRC_FILES}
     ${HEADER_FILES}
-        include/slope.h
-        src/slope.cpp
+    ${SRC_DIR}/slope.cpp
+    ${SRC_DIR}/init.cpp
+    ${SRC_DIR}/level.cpp
+    ${SRC_DIR}/phy.cpp
+    ${SRC_DIR}/update.cpp
+    ${INCLUDE_DIR}/slope.hpp
 )
-target_include_directories(${PROJECT_NAME} PRIVATE 
+target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/include
     ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/lib/sdl2/include
     #${CMAKE_CURRENT_SOURCE_DIR}/PTSD/lib/glew/include

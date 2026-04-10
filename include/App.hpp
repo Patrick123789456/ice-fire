@@ -7,7 +7,17 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "Slope.h"
+#include "slope.hpp"
+#include "config.hpp"
+#include "Util/Image.hpp"
+#include "Util/Input.hpp"
+#include "Util/Keycode.hpp"
+#include "Util/Logger.hpp"
+#include "Util/Text.hpp"
+#include "cmath"
+
+const std::string PIC_PATH = "../Resources/picture/";
+const std::string FONT_PATH = "../Resources/font/";
 
 class App {
 public:
@@ -26,12 +36,7 @@ public:
     void End();
 
 private:
-    //slope
-    std::vector<Slope> m_Slopes;
 
-    float m_FootOffset = 32.0f;      // 角色中心到腳底距離，要自己微調
-    float m_SlopeTolerance = 10.0f;  // 站在斜坡上的容許誤差
-    float m_SlopeSnapHeight = 16.0f;   // 只吸附離坡面不遠的角色
 
     // 碰撞偵測：player 碰撞 stone 或 trap
     bool IsColliding(const std::shared_ptr<Util::GameObject>& player, const std::shared_ptr<Util::GameObject>& target);
@@ -113,21 +118,23 @@ private:
 
     bool m_IceOnGround = false;
     bool m_FireOnGround = false;
+    //斜坡=================================================
+    std::vector<Slope> m_Slopes;
+    void AddSlope(const std::string& imagePath, const glm::vec2& imagePos,
+                  const glm::vec2& imageScale, const glm::vec2& localStart,
+                  const glm::vec2& localEnd, float slideSpeed,
+                  float moveFactor, bool isSolid = true, float zIndex = -1.0f);
+    void ApplySlopeToPlayer(const std::shared_ptr<Util::GameObject>& player,float& velocityY, bool& onGround, float& dx);
 
-    void AddSlope(const std::string& imagePath,
-              const glm::vec2& imagePos,
-              const glm::vec2& imageScale,
-              const glm::vec2& localStart,
-              const glm::vec2& localEnd,
-              float slideSpeed,
-              float moveFactor,
-              bool isSolid = true,
-              float zIndex = -1.0f);
+    // 斜坡數值
+    float m_FootOffset = 25.0f;
+    float m_SlopeTolerance = 10.0f;
+    float m_SlopeSnapHeight = 16.0f;
 
-    void ApplySlopeToPlayer(const std::shared_ptr<Util::GameObject>& player,
-                            float& velocityY,
-                            bool& onGround,
-                            float& dx);
+
+    void HandleMechanics(float iceDx, float fireDx, const Uint8* keys);
+    void UpdateAnimations();
+
 };
 
 #endif
