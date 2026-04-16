@@ -39,6 +39,8 @@ void App::Update() {
 
     // 3. 動畫與門的邏輯
     UpdateAnimations();
+    //確認寶石收集
+    CheckDiamondCollection();
 
     // 4. 更新 UI
     m_IcePosText->SetDrawable(std::make_shared<Util::Text>(FONT_PATH + "arial.ttf", 20, "Ice: (" + std::to_string((int)m_Ice->m_Transform.translation.x) + "," + std::to_string((int)m_Ice->m_Transform.translation.y) + ")", Util::Color(51,153,255)));

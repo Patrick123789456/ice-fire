@@ -135,6 +135,10 @@ private:
     void HandleMechanics(float iceDx, float fireDx, const Uint8* keys);
     void UpdateAnimations();
 
+    void InitDiamonds();
+    void UpdateDiamonds();
+    void CheckDiamondCollection();
+
 };
 
 #endif

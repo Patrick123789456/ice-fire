@@ -43,6 +43,7 @@ add_executable(${PROJECT_NAME}
     ${SRC_DIR}/phy.cpp
     ${SRC_DIR}/update.cpp
     ${INCLUDE_DIR}/slope.hpp
+        ${SRC_DIR}/diamond.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/include

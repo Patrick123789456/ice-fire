@@ -62,25 +62,13 @@ void App::LoadLevel(int level) {
     m_Gear2OriginalPos = m_Gear2->m_Transform.translation;
     m_Root->AddChild(m_Gear2);
 
-    // 鑽石初始化
-    m_RedDiamond = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "r_diamond.png"), 0.2f);
-    m_RedDiamond->m_Transform.translation = { 100.0f, -120.0f };
-    m_RedDiamond->m_Transform.scale = { 0.6f, 0.6f };
-    m_Root->AddChild(m_RedDiamond);
-    m_RedDiamondBasePos = m_RedDiamond->m_Transform.translation;
-
-    m_BlueDiamond = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "b_diamond.png"), 0.2f);
-    m_BlueDiamond->m_Transform.translation = { -100.0f, -120.0f };
-    m_BlueDiamond->m_Transform.scale = { 0.6f, 0.6f };
-    m_Root->AddChild(m_BlueDiamond);
-    m_BlueDiamondBasePos = m_BlueDiamond->m_Transform.translation;
+    //鑽石初始化
+    InitDiamonds();
 
     // --- 5. 斜坡 ---
     AddSlope(PIC_PATH + "l_tri.png", {500.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, -14.0f}, {14.0f, 14.0f}, 0.2f, 0.2f, true);
     AddSlope(PIC_PATH + "r_tri.png", {100.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, 14.0f}, {14.0f, -14.0f}, 0.2f, 0.1f, true);
 
-    m_RedDiamondCollected = false;
-    m_BlueDiamondCollected = false;
 }
 
 void App::ClearLevel() {
