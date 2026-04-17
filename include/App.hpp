@@ -60,6 +60,7 @@ private:
     std::shared_ptr<Util::GameObject> m_FireDoor;
     std::shared_ptr<Util::GameObject> m_Box;                //箱子
 
+
     // ===== 新增：門動畫 =====
     std::vector<std::string> m_IceDoorFrames;
     std::vector<std::string> m_FireDoorFrames;

@@ -53,10 +53,14 @@ void App::LoadLevel(int level) {
         m_Root->AddChild(m_Gear);
 
         if (!m_Box) {
-            m_Box = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "box.png"), 0.1f);
+            m_Box = std::make_shared<Util::GameObject>(
+                std::make_shared<Util::Image>(PIC_PATH + "box.png"), 0.1f
+            );
             m_Root->AddChild(m_Box);
         }
-        m_Box->m_Transform.translation = { -100.0f, -171.0f };
+        m_Box->m_Transform.translation = { -600.0f, 100.0f };
+        m_BoxVelocityY = 0.0f;
+        m_BoxOnGround = false;
     }
 
     // --- 4. 共通物件 (拉桿、鑽石) ---

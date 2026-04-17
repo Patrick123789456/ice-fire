@@ -201,14 +201,49 @@ void App::HandleMechanics(float iceDx, float fireDx, const Uint8* keys) {
     ApplySlopeToPlayer(m_Ice, m_IceVelocityY, m_IceOnGround, iceDx);
     ApplySlopeToPlayer(m_Fire, m_FireVelocityY, m_FireOnGround, fireDx);
 
+    std::vector<std::shared_ptr<Util::GameObject>> boxCollisionGroup = m_Stones;
+    if (m_Gear) boxCollisionGroup.push_back(m_Gear);
+    if (m_Gear2) boxCollisionGroup.push_back(m_Gear2);
+
+    if (m_Box) {
+        m_BoxOnGround = false;
+
+        // 重力
+        m_BoxVelocityY -= m_Gravity;
+        m_Box->m_Transform.translation.y += m_BoxVelocityY;
+
+        for (const auto &obj: boxCollisionGroup) {
+            if (!obj) continue;
+
+            if (IsColliding(m_Box, obj)) {
+                float objTop = obj->m_Transform.translation.y + obj->GetScaledSize().y / 2.0f;
+                float objBottom = obj->m_Transform.translation.y - obj->GetScaledSize().y / 2.0f;
+                float boxHalfH = m_Box->GetScaledSize().y / 2.0f;
+
+                if (m_BoxVelocityY <= 0.0f &&
+                    m_Box->m_Transform.translation.y > obj->m_Transform.translation.y) {
+                    // 落地
+                    m_Box->m_Transform.translation.y = objTop + boxHalfH;
+                    m_BoxVelocityY = 0.0f;
+                    m_BoxOnGround = true;
+                } else if (m_BoxVelocityY > 0.0f &&
+                           m_Box->m_Transform.translation.y < obj->m_Transform.translation.y) {
+                    // 頂頭
+                    m_Box->m_Transform.translation.y = objBottom - boxHalfH;
+                    m_BoxVelocityY = 0.0f;
+                }
+            }
+        }
+    }
+
     // 機關邏輯
     bool isPressed = IsColliding(m_Ice, m_Button) || IsColliding(m_Fire, m_Button) || (m_Box && IsColliding(m_Box, m_Button));
     if (isPressed) {
         m_Button->SetVisible(false);
-        m_Gear->m_Transform.translation.x = m_GearOriginalPos.x + 50.0f;
+        m_Gear->m_Transform.translation.y = m_GearOriginalPos.y + 50.0f;  // 往上
     } else {
         m_Button->SetVisible(true);
-        m_Gear->m_Transform.translation.x = m_GearOriginalPos.x;
+        m_Gear->m_Transform.translation.y = m_GearOriginalPos.y;
     }
 
     //door
