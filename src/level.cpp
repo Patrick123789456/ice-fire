@@ -17,6 +17,13 @@ void App::LoadLevel(int level) {
             m_Root->AddChild(stone);
         }
 
+        for (int i = 0; i < 5; ++i) {
+            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
+            stone->m_Transform.translation = { -640.0f + (i * stone->GetScaledSize().x), -170.0f };
+            m_Stones.push_back(stone);
+            m_Root->AddChild(stone);
+        }
+
         // --- 2. 角色位置重置 ---
         m_Ice->m_Transform.translation = { -500.0f, 0.0f };
         m_Fire->m_Transform.translation = { 500.0f, 0.0f };

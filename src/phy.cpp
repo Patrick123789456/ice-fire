@@ -112,36 +112,91 @@ void App::HandleMechanics(float iceDx, float fireDx, const Uint8* keys) {
     if (m_Gear2) collisionGroup.push_back(m_Gear2);
 
     for (const auto& obj : collisionGroup) {
-        if (!obj) continue;
-        float objTop = obj->m_Transform.translation.y + (obj->GetScaledSize().y / 2.0f);
-        float objBottom = obj->m_Transform.translation.y - (obj->GetScaledSize().y / 2.0f);
+    if (!obj) continue;
 
-        if (IsColliding(m_Ice, obj)) {
-            // 垂直判定：腳踏 (由上往下掉)
+    float objLeft   = obj->m_Transform.translation.x - (obj->GetScaledSize().x / 2.0f);
+    float objRight  = obj->m_Transform.translation.x + (obj->GetScaledSize().x / 2.0f);
+    float objTop    = obj->m_Transform.translation.y + (obj->GetScaledSize().y / 2.0f);
+    float objBottom = obj->m_Transform.translation.y - (obj->GetScaledSize().y / 2.0f);
+
+    // ===== Ice =====
+    if (IsColliding(m_Ice, obj)) {
+        float iceHalfW = m_Ice->GetScaledSize().x / 2.0f;
+        float iceHalfH = m_Ice->GetScaledSize().y / 2.0f;
+
+        float iceLeft   = m_Ice->m_Transform.translation.x - iceHalfW;
+        float iceRight  = m_Ice->m_Transform.translation.x + iceHalfW;
+        float iceTop    = m_Ice->m_Transform.translation.y + iceHalfH;
+        float iceBottom = m_Ice->m_Transform.translation.y - iceHalfH;
+
+        float overlapLeft   = iceRight - objLeft;     // 冰角色從左撞過來
+        float overlapRight  = objRight - iceLeft;     // 冰角色從右撞過來
+        float overlapTop    = iceTop - objBottom;     // 冰角色從下往上頂
+        float overlapBottom = objTop - iceBottom;     // 冰角色從上往下踩
+
+        float minOverlapX = std::min(overlapLeft, overlapRight);
+        float minOverlapY = std::min(overlapTop, overlapBottom);
+
+        if (minOverlapX < minOverlapY) {
+            // 左右碰撞
+            if (overlapLeft < overlapRight) {
+                m_Ice->m_Transform.translation.x = objLeft - iceHalfW;
+            } else {
+                m_Ice->m_Transform.translation.x = objRight + iceHalfW;
+            }
+        } else {
+            // 上下碰撞
             if (m_IceVelocityY <= 0 && m_Ice->m_Transform.translation.y > obj->m_Transform.translation.y) {
                 m_IceVelocityY = 0;
-                m_Ice->m_Transform.translation.y = objTop + (m_Ice->GetScaledSize().y / 2.0f);
+                m_Ice->m_Transform.translation.y = objTop + iceHalfH;
                 iG = true;
             }
-            // 垂直判定：頂頭 (由下往上升) -> 這是新增的邏輯
             else if (m_IceVelocityY > 0 && m_Ice->m_Transform.translation.y < obj->m_Transform.translation.y) {
                 m_IceVelocityY = 0;
-                m_Ice->m_Transform.translation.y = objBottom - (m_Ice->GetScaledSize().y / 2.0f);
+                m_Ice->m_Transform.translation.y = objBottom - iceHalfH;
             }
         }
+    }
 
-        if (IsColliding(m_Fire, obj)) {
+    // ===== Fire =====
+    if (IsColliding(m_Fire, obj)) {
+        float fireHalfW = m_Fire->GetScaledSize().x / 2.0f;
+        float fireHalfH = m_Fire->GetScaledSize().y / 2.0f;
+
+        float fireLeft   = m_Fire->m_Transform.translation.x - fireHalfW;
+        float fireRight  = m_Fire->m_Transform.translation.x + fireHalfW;
+        float fireTop    = m_Fire->m_Transform.translation.y + fireHalfH;
+        float fireBottom = m_Fire->m_Transform.translation.y - fireHalfH;
+
+        float overlapLeft   = fireRight - objLeft;
+        float overlapRight  = objRight - fireLeft;
+        float overlapTop    = fireTop - objBottom;
+        float overlapBottom = objTop - fireBottom;
+
+        float minOverlapX = std::min(overlapLeft, overlapRight);
+        float minOverlapY = std::min(overlapTop, overlapBottom);
+
+        if (minOverlapX < minOverlapY) {
+            // 左右碰撞
+            if (overlapLeft < overlapRight) {
+                m_Fire->m_Transform.translation.x = objLeft - fireHalfW;
+            } else {
+                m_Fire->m_Transform.translation.x = objRight + fireHalfW;
+            }
+        } else {
+            // 上下碰撞
             if (m_FireVelocityY <= 0 && m_Fire->m_Transform.translation.y > obj->m_Transform.translation.y) {
                 m_FireVelocityY = 0;
-                m_Fire->m_Transform.translation.y = objTop + (m_Fire->GetScaledSize().y / 2.0f);
+                m_Fire->m_Transform.translation.y = objTop + fireHalfH;
                 fG = true;
             }
             else if (m_FireVelocityY > 0 && m_Fire->m_Transform.translation.y < obj->m_Transform.translation.y) {
                 m_FireVelocityY = 0;
-                m_Fire->m_Transform.translation.y = objBottom - (m_Fire->GetScaledSize().y / 2.0f);
+                m_Fire->m_Transform.translation.y = objBottom - fireHalfH;
             }
         }
     }
+}
     m_IceOnGround = iG; m_FireOnGround = fG;
     ApplySlopeToPlayer(m_Ice, m_IceVelocityY, m_IceOnGround, iceDx);
     ApplySlopeToPlayer(m_Fire, m_FireVelocityY, m_FireOnGround, fireDx);
