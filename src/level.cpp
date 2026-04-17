@@ -68,11 +68,13 @@ void App::LoadLevel(int level) {
     m_Switch->m_Transform.translation = { -200.0f, -185.0f };
     m_Root->AddChild(m_Switch);
 
-    m_Gear2 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear2.png"), -1.0f);
+    m_Gear2 = std::make_shared<Util::GameObject>(
+    std::make_shared<Util::Image>(PIC_PATH + "gear2.png"), -1.0f
+);
     m_Gear2->m_Transform.translation = { -400.0f, -50.0f };
+    m_Gear2->m_Transform.rotation = glm::radians(-90.0f);   // 轉 90 度
     m_Gear2OriginalPos = m_Gear2->m_Transform.translation;
     m_Root->AddChild(m_Gear2);
-
     //鑽石初始化
     InitDiamonds();
 
