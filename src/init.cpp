@@ -36,6 +36,30 @@ void App::Start() {
         m_FireDoorFrames.push_back(PIC_PATH + "fire_door/fire_door" + std::to_string(i) + ".png");
     }
 
+    // 風扇
+
+    std::vector<std::string> fanFrames;
+    std::vector<std::string> windFrames;
+
+    for (int i = 1; i <= 4; i++) {
+        fanFrames.push_back(PIC_PATH + "fan(" + std::to_string(i) + ").png");
+    }
+
+    for (int i = 1; i <= 10; i++) {
+        windFrames.push_back(PIC_PATH + "wind(" + std::to_string(i) + ").png");
+    }
+
+    m_Fan = std::make_shared<Fan>(fanFrames, windFrames);
+
+    m_Root->AddChild(m_Fan->GetWindObject());
+    m_Root->AddChild(m_Fan->GetFanObject());
+
+
+    m_IceDoor = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "ice_door.png"), -2.0f);
+    m_FireDoor = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "fire_door.png"), -2.0f);
+    m_Root->AddChild(m_IceDoor);
+    m_Root->AddChild(m_FireDoor);
+
     // 4. 初始化 UI 文字
     std::string font = FONT_PATH + "arial.ttf";
     m_IcePosText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 20, "Ice: (0, 0)", Util::Color(51,153,255)), 10.0f);

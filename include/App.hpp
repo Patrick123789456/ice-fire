@@ -15,6 +15,8 @@
 #include "Util/Logger.hpp"
 #include "Util/Text.hpp"
 #include "cmath"
+#include "fan.h"
+#include "Util/Animation.hpp"
 
 const std::string PIC_PATH = "../Resources/picture/";
 const std::string FONT_PATH = "../Resources/font/";
@@ -59,6 +61,9 @@ private:
     std::shared_ptr<Util::GameObject> m_IceDoor;
     std::shared_ptr<Util::GameObject> m_FireDoor;
     std::shared_ptr<Util::GameObject> m_Box;                //箱子
+
+    // 電風扇
+    std::shared_ptr<Fan> m_Fan;
 
 
     // ===== 新增：門動畫 =====
@@ -109,7 +114,7 @@ private:
 
     float m_Gravity = 0.4f;
     float m_JumpForce = 10.0f;
-    float m_MoveSpeed = 7.0f;
+    float m_MoveSpeed = 5.0f;
     float m_BoxMoveSpeedLimit = 3.0f;
 
     float m_IceVelocityY = 0.0f;

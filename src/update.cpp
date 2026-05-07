@@ -3,6 +3,29 @@
 #include "Util/Keycode.hpp"
 #include "Util/Text.hpp"
 
+
+static bool IsInWindArea(
+    const std::shared_ptr<Util::GameObject>& player,
+    const std::shared_ptr<Util::GameObject>& fan,
+    float windWidth,
+    float windHeight
+) {
+    if (!player || !fan) return false;
+
+    glm::vec2 p = player->m_Transform.translation;
+    glm::vec2 f = fan->m_Transform.translation;
+
+    float left = f.x - windWidth / 2.0f;
+    float right = f.x + windWidth / 2.0f;
+    float bottom = f.y;
+    float top = f.y + windHeight;
+
+    return p.x >= left &&
+           p.x <= right &&
+           p.y >= bottom &&
+           p.y <= top;
+}
+
 void App::Update() {
     if (Util::Input::IfExit()) { m_CurrentState = State::END; return; }
 
@@ -37,6 +60,11 @@ void App::Update() {
     // 呼叫物理與機關 (實作在 App_Physics.cpp)
     HandleMechanics(iceDx, fireDx, keys);
 
+    if (m_Fan) {
+        m_Fan->ApplyWind(m_Ice, m_IceVelocityY, m_IceOnGround);
+        m_Fan->ApplyWind(m_Fire, m_FireVelocityY, m_FireOnGround);
+    }
+
     // 3. 動畫與門的邏輯
     UpdateAnimations();
     //確認寶石收集
@@ -61,6 +89,11 @@ void App::UpdateAnimations() {
         };
         updateDoor(IsColliding(m_Ice, m_IceDoor), m_IceDoorFrameIndex, m_IceDoorFrames, m_IceDoor);
         updateDoor(IsColliding(m_Fire, m_FireDoor), m_FireDoorFrameIndex, m_FireDoorFrames, m_FireDoor);
+    }
+
+    // 電風扇動畫
+    if (m_Fan) {
+        m_Fan->UpdateAnimation();
     }
 
     // 鑽石浮動
