@@ -15,6 +15,8 @@
 #include "Util/Logger.hpp"
 #include "Util/Text.hpp"
 #include "cmath"
+#include "fan.h"
+#include "Util/Animation.hpp"
 
 const std::string PIC_PATH = "../Resources/picture/";
 const std::string FONT_PATH = "../Resources/font/";
@@ -53,6 +55,21 @@ private:
     std::shared_ptr<Util::GameObject> m_Background;
     std::shared_ptr<Util::GameObject> m_Ice;
     std::shared_ptr<Util::GameObject> m_Fire;
+
+    //=======物理參數====================================================================
+    float m_Gravity = 0.4f;
+    float m_JumpForce = 10.0f;
+    float m_MoveSpeed = 5.0f;
+    float m_BoxMoveSpeedLimit = 3.0f;
+
+    float m_IceVelocityY = 0.0f;
+    float m_FireVelocityY = 0.0f;
+
+    float m_BoxVelocityY = 0.0f; // 箱子的垂直速度
+    bool m_BoxOnGround = false;  // 箱子是否在地板上
+
+    bool m_IceOnGround = false;
+    bool m_FireOnGround = false;
     //================================================================
 
 
@@ -77,16 +94,19 @@ private:
     std::shared_ptr<Util::GameObject> m_FireDoor;
     std::vector<std::string> m_IceDoorFrames;
     std::vector<std::string> m_FireDoorFrames;
-
     int m_IceDoorFrameIndex = 0;
     int m_FireDoorFrameIndex = 0;
-
     bool m_IceDoorOpening = false;
     bool m_FireDoorOpening = false;
-
     int m_DoorAnimCounter = 0;
     int m_DoorAnimSpeed = 2;   // 數字越大，門動畫越慢
     //=====================================================================
+
+
+    // 電風扇
+    std::shared_ptr<Fan> m_Fan;
+
+
 
 
 
@@ -116,20 +136,7 @@ private:
 
 
 
-    //=======物理參數====================================================================
-    float m_Gravity = 0.4f;
-    float m_JumpForce = 10.0f;
-    float m_MoveSpeed = 5.0f;
-    float m_BoxMoveSpeedLimit = 3.0f;
 
-    float m_IceVelocityY = 0.0f;
-    float m_FireVelocityY = 0.0f;
-
-    float m_BoxVelocityY = 0.0f; // 箱子的垂直速度
-    bool m_BoxOnGround = false;  // 箱子是否在地板上
-
-    bool m_IceOnGround = false;
-    bool m_FireOnGround = false;
 
 
 

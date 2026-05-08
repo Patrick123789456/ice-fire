@@ -36,6 +36,7 @@ void App::Start() {
         m_FireDoorFrames.push_back(PIC_PATH + "fire_door/fire_door" + std::to_string(i) + ".png");
     }
 
+
     // 4. 初始化 UI 文字
     std::string font = FONT_PATH + "arial.ttf";
     float UI_Y = 310.0f; // 頂部 Y 座標

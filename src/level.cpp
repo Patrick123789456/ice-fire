@@ -170,7 +170,39 @@ void App::LoadLevel(int level) {
         m_SwitchStates.push_back(false); // 初始狀態設為關閉
         m_Root->AddChild(sw);
 
+        // // ==========風扇=======================================================
+
+        // std::vector<std::string> fanFrames;
+        // std::vector<std::string> windFrames;
+
+        // for (int i = 1; i <= 4; i++) {
+        //     fanFrames.push_back(PIC_PATH + "fan(" + std::to_string(i) + ").png");
+        // }
+        // for (int i = 1; i <= 10; i++) {
+        //     windFrames.push_back(PIC_PATH + "wind(" + std::to_string(i) + ").png");
+        // }
+
+        // m_Fan = std::make_shared<Fan>(fanFrames, windFrames);
+        // m_Root->AddChild(m_Fan->GetWindObject());
+        // m_Root->AddChild(m_Fan->GetFanObject());
+        // m_Fan->SetActive(true);
+
+        // m_Fan->SetPosition(
+        //     glm::vec2(150.0f, -300.0f),
+        //     glm::vec2(0.0f, 120.0f)
+        // );
+
+        // m_Fan->SetScale(
+        //     glm::vec2(0.45f, 0.45f),
+        //     glm::vec2(0.45f, 0.85f)
+        // );
+        // // =====================================================================
+
         InitDiamonds();
+        // --- 5. 斜坡 ---
+        //AddSlope(PIC_PATH + "l_tri.png", {500.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, -14.0f}, {14.0f, 14.0f}, 0.2f, 0.2f, true);
+        //AddSlope(PIC_PATH + "r_tri.png", {409.0f, -143.0f}, {1.2f, 1.2f}, {-14.0f, 14.0f}, {14.0f, -14.0f}, 0.2f, 0.1f, true);
+
     }
 }
 

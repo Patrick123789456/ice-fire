@@ -391,8 +391,8 @@ void App::HandleMechanics(float iceDx, float fireDx, const Uint8* keys) {
     }
 
     // 檢查通關條件
-    if (m_IceDoorFrameIndex == (int)m_IceDoorFrames.size() - 1 && 
-        m_FireDoorFrameIndex == (int)m_FireDoorFrames.size() - 1 && 
+    if (m_IceDoorFrameIndex == (int)m_IceDoorFrames.size() - 1 &&
+        m_FireDoorFrameIndex == (int)m_FireDoorFrames.size() - 1 &&
         IsColliding(m_Ice, m_IceDoor) && IsColliding(m_Fire, m_FireDoor)) {
         LoadLevel(m_CurrentLevelNum + 1);
         return;
