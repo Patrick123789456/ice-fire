@@ -272,8 +272,24 @@ void App::LoadLevel(int level) {
 
         // --- 5. 斜坡 ---
         //AddSlope(PIC_PATH + "l_tri.png", {500.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, -14.0f}, {14.0f, 14.0f}, 0.2f, 0.2f, true);
-        //AddSlope(PIC_PATH + "r_tri.png", {100.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, 14.0f}, {14.0f, -14.0f}, 0.2f, 0.1f, true);
+        AddSlope(PIC_PATH + "r_tri.png", {409.0f, -143.0f}, {1.2f, 1.2f}, {-14.0f, 14.0f}, {14.0f, -14.0f}, 0.2f, 0.1f, true);
 
+    }
+    if (level == 1) {
+        m_Fan->SetActive(true);
+
+        m_Fan->SetPosition(
+            glm::vec2(150.0f, -300.0f),
+            glm::vec2(0.0f, 120.0f)
+        );
+
+        m_Fan->SetScale(
+            glm::vec2(0.45f, 0.45f),
+            glm::vec2(0.45f, 0.85f)
+        );
+    }
+    else {
+        m_Fan->SetActive(false);
     }
 }
 
@@ -286,7 +302,7 @@ void App::ClearLevel() {
     auto cleanup = [&](std::shared_ptr<Util::GameObject>& obj) {
         if (obj) { m_Root->RemoveChild(obj); obj = nullptr; }
     };
-    cleanup(m_Button); cleanup(m_Gear); cleanup(m_Gear2);
+    cleanup(m_Button); cleanup(m_Button2); cleanup(m_Gear); cleanup(m_Gear2);
     cleanup(m_Switch); cleanup(m_RedDiamond); cleanup(m_BlueDiamond);
 
     // 清理斜坡圖片
