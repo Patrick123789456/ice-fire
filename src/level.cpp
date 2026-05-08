@@ -1,249 +1,127 @@
 #include "App.hpp"
 #include "Util/Image.hpp"
 #include "slope.hpp"
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <cstdlib>
+#include <ctime>
 
 void App::LoadLevel(int level) {
-    ClearLevel(); // 先清理舊的
+    ClearLevel(); // 1. 先清理上一關的殘留物件
     m_CurrentLevelNum = level;
     m_Score = 0;
-
+    srand(time(NULL));
+    // 判斷是否為要載入地圖檔的關卡
     if (level == 1 || level == 2) {
-        {//下
-        for (int i = 0; i < 60; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + (i * stone->GetScaledSize().x), -349.0f }; // 移到最底部
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        //上
-        for (int i = 0; i < 60; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + (i * stone->GetScaledSize().x), 349.0f }; // 視窗頂部
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        //左
-        for (int i = 0; i < 50; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f, -349.0f + (i * stone->GetScaledSize().y) };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        //右
-        for (int i = 0; i < 50; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { 629.0f, -349.0f + (i * stone->GetScaledSize().y) };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
+        // --- 2. 定義地圖參數 ---
+        const float TILE_SIZE = 23.0f;
+        const int MAP_WIDTH = 39;
+        const int MAP_HEIGHT = 29;
+        std::string mapPath = "../resources/map/level" + std::to_string(level) + ".txt";
 
-        for (int i = 0; i < 25; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + (i * stone->GetScaledSize().x), -326.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
+        // 計算左上角起始座標 (視窗 897*667，格子 23*23)
+        // 寬度中心偏移: -897/2 + 23/2 = -437
+        // 高度中心偏移:  667/2 - 23/2 =  322
+        float startX = -437.0f;
+        float startY = 322.0f;
 
-        for (int i = 0; i < 6; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + 30 * 23.0f + (i * stone->GetScaledSize().x), -326.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
+        // --- 3. 開啟並讀取檔案 ---
+        std::ifstream file(mapPath);
+        if (!file.is_open()) {
+            printf("Failed to open map file: %s\n", mapPath.c_str());
+            return;
         }
+        std::string line;
+        // 逐行讀取 Y 軸 (Row)
+        for (int row = 0; row < MAP_HEIGHT && std::getline(file, line); ++row) {
+            std::stringstream ss(line);
+            std::string cell;
 
-        for (int i = 0; i < 20; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + 41 * 23.0f + (i * stone->GetScaledSize().x), -326.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
+            // 逐格讀取 X 軸 (Column)
+            for (int col = 0; col < MAP_WIDTH && ss >> cell; ++col) {
+                // 計算當前格子的實際座標
+                float posX = startX + (col * TILE_SIZE);
+                float posY = startY - (row * TILE_SIZE);
+                printf("Loading cell at row %d, col %d: %s (posX: %.2f, posY: %.2f)\n", row, col, cell.c_str(), posX, posY);
+                // --- 4. 根據代碼生成物件 ---
+                if (cell == "1") {
+                    // 隨機產生 1 到 5 的數字
+                    int randomIdx = (std::rand() % 4) + 1;
+                    std::string stonePath = PIC_PATH + "stone" + std::to_string(randomIdx) + ".png";
 
-        for (int i = 0; i < 8; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + (i * stone->GetScaledSize().x), -257.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-
-        //右下角突出
-        {
-        // 第一顆需要 auto 定義
-        auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-        stone->m_Transform.translation = { 613.0f, -303.0f };
-        m_Stones.push_back(stone);
-        m_Root->AddChild(stone);
-
-        // 後面幾顆直接指派新物件給同一個變數即可，不要再寫 auto
-        stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-        stone->m_Transform.translation = { 613.0f, -280.0f };
-        m_Stones.push_back(stone);
-        m_Root->AddChild(stone);
-
-        stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-        stone->m_Transform.translation = { 590.0f, -303.0f };
-        m_Stones.push_back(stone);
-        m_Root->AddChild(stone);
-
-        stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-        stone->m_Transform.translation = { 590.0f, -280.0f };
-        m_Stones.push_back(stone);
-        m_Root->AddChild(stone);
-        }
-
-        //2F下
-        for (int i = 0; i < 50; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + (i * stone->GetScaledSize().x), -165.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-
-        //2F上
-        for (int i = 0; i < 30; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f  + (i * stone->GetScaledSize().x), -142.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        for (int i = 0; i < 11; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + ((i+34) * stone->GetScaledSize().x), -142.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-
-        //2.5F
-        for (int i = 0; i < 56; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + ((i+4) * stone->GetScaledSize().x), -27.0f }; // 視窗頂部
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        //3F下
-        for (int i = 0; i < 51; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -629.0f + (i * stone->GetScaledSize().x), 65.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-
-        //3F中
-        for (int i = 0; i < 20; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -54.0f + (i * stone->GetScaledSize().x), 88.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-
-        //3F上
-        for (int i = 0; i < 15; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -54.0f + (i * stone->GetScaledSize().x), 111.0f };
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-
-        //4F
-        for (int i = 0; i < 50; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -399.0f + (i * stone->GetScaledSize().x), 180.0f }; // 視窗頂部
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        for (int i = 0; i < 50; ++i) {
-            auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-            stone->m_Transform.translation = { -399.0f + (i * stone->GetScaledSize().x), 203.0f }; // 視窗頂部
-            m_Stones.push_back(stone);
-            m_Root->AddChild(stone);
-        }
-        // 取得石磚尺寸 (假設寬度約 23.0f, 高度約 23.0f)
-        auto tempStone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-        float sw = tempStone->GetScaledSize().x;
-        float sh = tempStone->GetScaledSize().y;
-
-        // --- 區域 1：X(-399~100), Y(134~157), 13x2 的方塊 ---
-        for (int j = 1; j < 2; ++j) { // Y 軸 2 層
-            for (int i = 0; i < 13; ++i) { // X 軸 13 顆
-                auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-                stone->m_Transform.translation = { -399.0f + (i * sw), 134.0f + (j * sh) };
-                m_Stones.push_back(stone);
-                m_Root->AddChild(stone);
+                    auto stone = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(stonePath), -1.0f
+                    );
+                    stone->m_Transform.translation = { posX, posY };
+                    m_Stones.push_back(stone);
+                    m_Root->AddChild(stone);
+                }
+                else if (cell == "2") {
+                    auto stone = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(PIC_PATH + "trapbottom.png"), -1.0f
+                    );
+                    stone->m_Transform.translation = { posX, posY - 7.5f};
+                    m_Stones.push_back(stone);
+                    m_Root->AddChild(stone);
+                    // 生成冰陷阱
+                    auto trap = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(PIC_PATH + "trap1.png"), -1.0f
+                    );
+                    trap->m_Transform.translation = { posX, posY + 4.0f };
+                    m_IceTraps.push_back(trap);
+                    m_Root->AddChild(trap);
+                }
+                else if (cell == "3") {
+                    auto stone = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(PIC_PATH + "trapbottom.png"), -1.0f
+                    );
+                    stone->m_Transform.translation = { posX, posY - 7.5f};
+                    m_Stones.push_back(stone);
+                    m_Root->AddChild(stone);
+                    // 生成火陷阱
+                    auto trap = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(PIC_PATH + "trap2.png"), -1.0f
+                    );
+                    trap->m_Transform.translation = { posX, posY };
+                    m_FireTraps.push_back(trap);
+                    m_Root->AddChild(trap);
+                }
+                else if (cell == "4") {
+                    auto stone = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(PIC_PATH + "trapbottom.png"), -1.0f
+                    );
+                    stone->m_Transform.translation = { posX, posY - 7.5f};
+                    m_Stones.push_back(stone);
+                    m_Root->AddChild(stone);
+                    // 生成火陷阱
+                    auto trap = std::make_shared<Util::GameObject>(
+                        std::make_shared<Util::Image>(PIC_PATH + "trap.png"), -1.0f
+                    );
+                    trap->m_Transform.translation = { posX, posY };
+                    m_Traps.push_back(trap);
+                    m_Root->AddChild(trap);
+                }
             }
         }
-
-        // --- 區域 2：X(-606~-537), Y(88~157), 4x4 的方塊 ---
-        for (int j = 0; j < 4; ++j) { // Y 軸 4 層
-            for (int i = 0; i < 4; ++i) { // X 軸 4 顆
-                auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-                stone->m_Transform.translation = { -606.0f + (i * sw), 88.0f + (j * sh) };
-                m_Stones.push_back(stone);
-                m_Root->AddChild(stone);
-            }
-        }
-
-        // --- 區域 3：X(-399~-284), Y(180~249), 4x3 的方塊 ---
-        for (int j = 0; j < 3; ++j) { // Y 軸 3 層
-            for (int i = 0; i < 4; ++i) { // X 軸 4 顆
-                auto stone = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "stone1.png"), -1.0f);
-                stone->m_Transform.translation = { -399.0f + (i * sw), 180.0f + (j * sh) };
-                m_Stones.push_back(stone);
-                m_Root->AddChild(stone);
-            }
-        }
-
-        // --- 填入陷阱 (IceTrap) ---
-        for (int i = 0; i < 5; ++i) {
-            auto trap = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "trap1.png"), -1.0f);
-            trap->m_Transform.translation = { -629.0f + (25 + i) * trap->GetScaledSize().x, -334.0f };
-            m_Root->AddChild(trap);
-            m_IceTraps.push_back(trap);
-        }
-
-        // --- 填入陷阱 (FireTrap) ---
-        for (int i = 0; i < 5; ++i) {
-            auto trap = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "trap2.png"), -1.0f);
-            trap->m_Transform.translation = { -629.0f + (36 + i) * trap->GetScaledSize().x, -334.0f };
-            m_Root->AddChild(trap);
-            m_FireTraps.push_back(trap);
-        }
-
-        // --- 填入陷阱 (Trap) ---
-        for (int i = 0; i < 4; ++i) {
-            auto trap = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "trap0.png"), -1.0f);
-            trap->m_Transform.translation = { -560.0f + (36 + i - 9) * trap->GetScaledSize().x, -150.0f };
-            m_Root->AddChild(trap);
-            m_Traps.push_back(trap); // 關鍵：存進容器
-        }
-    }
+        file.close(); // 讀取完畢關閉串流
 
         // --- 2. 角色位置重置 ---
-        m_Ice->m_Transform.translation = { -550.0f, -228.0f };
-        m_Fire->m_Transform.translation = { -550.0f, -297.0f };
+        // 稍微向右移，避免貼死左邊緣 (-448.5)
+        m_Ice->m_Transform.translation = { -400.0f, -228.0f };
+        m_Fire->m_Transform.translation = { -400.0f, -297.0f };
         m_IceVelocityY = 0;
         m_FireVelocityY = 0;
 
         // --- 3. 門與機關 ---
-        m_IceDoor->m_Transform.translation = { -200.0f, 249.0f };
-        m_FireDoor->m_Transform.translation = { -100.0f, 249.0f };
+        // 門的位置原本在 -200, -100，在新視窗中依然適用，但 Y 軸可配合地圖微調
+        m_IceDoor->m_Transform.translation = { 370.0f, 240.0f };
+        m_FireDoor->m_Transform.translation = { 300.0f, 240.0f };
 
         m_IceDoorFrameIndex = 0;
         m_FireDoorFrameIndex = 0;
         m_IceDoor->SetDrawable(std::make_shared<Util::Image>(m_IceDoorFrames[0]));
         m_FireDoor->SetDrawable(std::make_shared<Util::Image>(m_FireDoorFrames[0]));
-
-
-        m_Button = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "button1.png"), -1.5f);
-        m_Button->m_Transform.translation = { -400.0f, -10.0f };
-        m_Root->AddChild(m_Button);
-
-        m_Button2 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "button1.png"), -1.0f);
-        m_Button2->m_Transform.translation = { 150.0f, 130.0f}; // 換位置
-        m_Root->AddChild(m_Button2);
-
-        m_Gear = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear1.png"), -1.0f);
-        m_Gear->m_Transform.translation = { 567.0f, 65.0f };
-        m_GearOriginalPos = m_Gear->m_Transform.translation;
-        m_Root->AddChild(m_Gear);
 
         if (!m_Box) {
             m_Box = std::make_shared<Util::GameObject>(
@@ -253,49 +131,93 @@ void App::LoadLevel(int level) {
         }
         m_BoxVelocityY = 0.0f;
         m_BoxOnGround = false;
+        m_Box->m_Transform.translation = { 10.0f, 150.0f };
 
-        m_Box->m_Transform.translation = { -31.0f, 140.0f };
+        // --- 3. 按鈕與機關 (Buttons) ---
+        // 按鈕 1
+        auto btn1 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "button1.png"), -1.5f);
+        btn1->m_Transform.translation = { -300.0f, -10.0f };
+        m_Buttons.push_back(btn1);
+        m_Root->AddChild(btn1);
 
-        // --- 4. 拉桿、鑽石 ---
-        m_Switch = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "switch1_1.png"), -1.5f);
-        m_Switch->m_Transform.translation = { -200.0f, -130.0f };
-        m_Root->AddChild(m_Switch);
+        // 按鈕 2
+        auto btn2 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "button1.png"), -1.0f);
+        btn2->m_Transform.translation = { 100.0f, 130.0f };
+        m_Buttons.push_back(btn2);
+        m_Root->AddChild(btn2);
 
-        m_Gear2 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear2.png"), -1.0f);
-        m_Gear2->m_Transform.translation = { -580.0f, -27.0f };
-        m_Gear2OriginalPos = m_Gear2->m_Transform.translation;
-        m_Gear2->m_Transform.rotation = glm::radians(-90.0f);   // 轉 90 度
-        m_Root->AddChild(m_Gear2);
 
-        //鑽石初始化
+        // --- 4. 齒輪/移動地板 (Gears) ---
+        // 齒輪 1
+        auto gear1 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear1.png"), -1.0f);
+        gear1->m_Transform.translation = { 380.0f, 46.0f };
+        m_Gears.push_back(gear1);
+        m_GearOriginalPositions.push_back(gear1->m_Transform.translation);
+        m_Root->AddChild(gear1);
+
+        // 齒輪 2 (垂直旋轉的)
+        auto gear2 = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "gear2.png"), -1.0f);
+        gear2->m_Transform.translation = { -390.0f, -27.0f };
+        m_Gears.push_back(gear2);
+        m_GearOriginalPositions.push_back(gear2->m_Transform.translation);
+        m_Root->AddChild(gear2);
+
+
+        // --- 5. 拉桿 (Switches) ---
+        auto sw = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "switch1_1.png"), -1.5f);
+        sw->m_Transform.translation = { -150.0f, -130.0f };
+        m_Switches.push_back(sw);
+        m_SwitchStates.push_back(false); // 初始狀態設為關閉
+        m_Root->AddChild(sw);
+
         InitDiamonds();
-
-        // --- 5. 斜坡 ---
-        //AddSlope(PIC_PATH + "l_tri.png", {500.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, -14.0f}, {14.0f, 14.0f}, 0.2f, 0.2f, true);
-        //AddSlope(PIC_PATH + "r_tri.png", {100.0f, -179.0f}, {1.2f, 1.2f}, {-14.0f, 14.0f}, {14.0f, -14.0f}, 0.2f, 0.1f, true);
-
     }
 }
 
 void App::ClearLevel() {
-    // 清理石頭
+    // 1. 清理石頭
     for (auto& stone : m_Stones) m_Root->RemoveChild(stone);
     m_Stones.clear();
 
-    // 清理一般物件
-    auto cleanup = [&](std::shared_ptr<Util::GameObject>& obj) {
-        if (obj) { m_Root->RemoveChild(obj); obj = nullptr; }
-    };
-    cleanup(m_Button); cleanup(m_Gear); cleanup(m_Gear2);
-    cleanup(m_Switch); cleanup(m_RedDiamond); cleanup(m_BlueDiamond);
+    // 2. 清理陷阱群 (Traps, IceTraps, FireTraps)
+    for (auto& t : m_Traps) m_Root->RemoveChild(t);
+    m_Traps.clear();
+    for (auto& t : m_IceTraps) m_Root->RemoveChild(t);
+    m_IceTraps.clear();
+    for (auto& t : m_FireTraps) m_Root->RemoveChild(t);
+    m_FireTraps.clear();
 
-    // 清理斜坡圖片
+    // 3. 清理機關類向量 (Buttons, Gears, Switches)
+    // 這是你提到的重點：將原本單一的 cleanup 改為迴圈清理向量
+    for (auto& btn : m_Buttons) m_Root->RemoveChild(btn);
+    m_Buttons.clear();
+
+    for (auto& gear : m_Gears) m_Root->RemoveChild(gear);
+    m_Gears.clear();
+    m_GearOriginalPositions.clear(); // 座標向量也要清空
+
+    for (auto& sw : m_Switches) m_Root->RemoveChild(sw);
+    m_Switches.clear();
+    m_SwitchStates.clear(); // 清空開關狀態向量
+
+    // 4. 清理其餘單一物件 (鑽石等)
+    auto cleanup = [&](std::shared_ptr<Util::GameObject>& obj) {
+        if (obj) {
+            m_Root->RemoveChild(obj);
+            obj = nullptr;
+        }
+    };
+    cleanup(m_RedDiamond);
+    cleanup(m_BlueDiamond);
+
+    // 5. 清理斜坡
     for (auto& slope : m_Slopes) {
         if (slope.GetImage()) m_Root->RemoveChild(slope.GetImage());
     }
     m_Slopes.clear();
-    m_Traps.clear();
-    m_IceTraps.clear();
-    m_FireTraps.clear();
-    m_IsSwitchOn = false;
+
+    // 6. 重置角色狀態與物理參數
+    m_IceVelocityY = 0;
+    m_FireVelocityY = 0;
+    // 如果你有一個全域的開關總變數也可以重置，但主要應該是清空 m_SwitchStates
 }

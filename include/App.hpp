@@ -46,22 +46,35 @@ private:
     void ClearLevel();
     State m_CurrentState = State::START;
 
+    //==基礎===========================================================
     std::shared_ptr<Util::Renderer> m_Root;
     std::shared_ptr<Util::GameObject> m_PauseScreen;
     std::shared_ptr<Util::GameObject> m_DeadScreen;
     std::shared_ptr<Util::GameObject> m_Background;
     std::shared_ptr<Util::GameObject> m_Ice;
     std::shared_ptr<Util::GameObject> m_Fire;
+    //================================================================
+
+
+
+    //===== map =========================================================
     std::vector<std::shared_ptr<Util::GameObject>> m_IceTraps;
     std::vector<std::shared_ptr<Util::GameObject>> m_FireTraps;
     std::vector<std::shared_ptr<Util::GameObject>> m_Traps;
     std::vector<std::shared_ptr<Util::GameObject>> m_Stones;
+    std::shared_ptr<Util::GameObject> m_Box;                //箱子
+    std::vector<std::shared_ptr<Util::GameObject>> m_Buttons;
+    std::vector<std::shared_ptr<Util::GameObject>> m_Switches;
+    std::vector<std::shared_ptr<Util::GameObject>> m_Gears;
+    std::vector<glm::vec2> m_GearOriginalPositions;
+    std::vector<bool> m_SwitchStates;
+    //=====================================================================
+
+
+
+    // ===== 門 ===============================================================
     std::shared_ptr<Util::GameObject> m_IceDoor;
     std::shared_ptr<Util::GameObject> m_FireDoor;
-    std::shared_ptr<Util::GameObject> m_Box;                //箱子
-
-
-    // ===== 新增：門動畫 =====
     std::vector<std::string> m_IceDoorFrames;
     std::vector<std::string> m_FireDoorFrames;
 
@@ -73,8 +86,11 @@ private:
 
     int m_DoorAnimCounter = 0;
     int m_DoorAnimSpeed = 2;   // 數字越大，門動畫越慢
+    //=====================================================================
 
-    // ===== 新增：紅色寶石 =====
+
+
+    // ===== 寶石 ========================================================================
     std::shared_ptr<Util::GameObject> m_RedDiamond;
     bool m_RedDiamondCollected = false;
     std::shared_ptr<Util::GameObject> m_BlueDiamond;
@@ -87,29 +103,23 @@ private:
     float m_DiamondFloatSpeed = 0.02f;   // 飄浮速度
     float m_DiamondFloatRange = 4.0f;    // 上下飄動幅度
 
-    // ===== 新增：分數 =====
+    //=====================================================================
+
+
+
+    // ===== 分數&文字 =====================================================
     int m_Score = 0;
     std::shared_ptr<Util::GameObject> m_ScoreText;
-
-
-    // 座標文字
     std::shared_ptr<Util::GameObject> m_IcePosText;
     std::shared_ptr<Util::GameObject> m_FirePosText;
+    //=====================================================================
 
 
-    //機關
-    std::shared_ptr<Util::GameObject> m_Button;  //按鈕一
-    std::shared_ptr<Util::GameObject> m_Button2; //按鈕二
-    std::shared_ptr<Util::GameObject> m_Gear;    //移動地板
-    glm::vec2 m_GearOriginalPos;
-    std::shared_ptr<Util::GameObject> m_Switch;  //拉桿
-    std::shared_ptr<Util::GameObject> m_Gear2;   //移動地板二
-    glm::vec2 m_Gear2OriginalPos;
-    bool m_IsSwitchOn = false;  // 開關狀態
 
+    //=======物理參數====================================================================
     float m_Gravity = 0.4f;
     float m_JumpForce = 10.0f;
-    float m_MoveSpeed = 7.0f;
+    float m_MoveSpeed = 5.0f;
     float m_BoxMoveSpeedLimit = 3.0f;
 
     float m_IceVelocityY = 0.0f;
@@ -120,6 +130,9 @@ private:
 
     bool m_IceOnGround = false;
     bool m_FireOnGround = false;
+
+
+
     //斜坡=================================================
     std::vector<Slope> m_Slopes;
     void AddSlope(const std::string& imagePath, const glm::vec2& imagePos,

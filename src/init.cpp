@@ -38,16 +38,21 @@ void App::Start() {
 
     // 4. 初始化 UI 文字
     std::string font = FONT_PATH + "arial.ttf";
+    float UI_Y = 310.0f; // 頂部 Y 座標
+
+    // Ice 座標文字 (靠左)
     m_IcePosText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 20, "Ice: (0, 0)", Util::Color(51,153,255)), 10.0f);
-    m_IcePosText->m_Transform.translation = { -560.0f, 340.0f };
+    m_IcePosText->m_Transform.translation = { -360.0f, UI_Y }; // 原 -560 超出範圍
     m_Root->AddChild(m_IcePosText);
 
+    // Fire 座標文字 (靠右)
     m_FirePosText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 20, "Fire: (0, 0)", Util::Color(255, 0, 0)), 10.0f);
-    m_FirePosText->m_Transform.translation = { 570.0f, 340.0f };
+    m_FirePosText->m_Transform.translation = { 360.0f, UI_Y }; // 原 570 超出範圍
     m_Root->AddChild(m_FirePosText);
 
+    // 分數文字 (居中)
     m_ScoreText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 24, "Score: 0", Util::Color(255, 255, 0)), 10.0f);
-    m_ScoreText->m_Transform.translation = { 0.0f, 340.0f };
+    m_ScoreText->m_Transform.translation = { 0.0f, UI_Y }; // X 軸保持 0 即可
     m_Root->AddChild(m_ScoreText);
 
     // 5. 進入第一關
