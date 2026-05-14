@@ -29,6 +29,7 @@ static bool IsInWindArea(
 void App::Update() {
     if (Util::Input::IfExit()) { m_CurrentState = State::END; return; }
 
+
     // 1. 死亡與暫停處理
     if (m_CurrentState == State::DEAD) {
         if (Util::Input::IsKeyDown(Util::Keycode::R)) {
@@ -57,8 +58,60 @@ void App::Update() {
     if (keys[SDL_SCANCODE_RIGHT]) fireDx += m_MoveSpeed;
     if (Util::Input::IsKeyDown(Util::Keycode::UP) && m_FireOnGround) { m_FireVelocityY = m_JumpForce; m_FireOnGround = false; }
 
+
     // 呼叫物理與機關 (實作在 App_Physics.cpp)
+    glm::vec2 oldIcePos = m_Ice->m_Transform.translation;
+    glm::vec2 oldFirePos = m_Fire->m_Transform.translation;
+
     HandleMechanics(iceDx, fireDx, keys);
+
+    // 鐵鍊平台
+    if (m_ChainPlatform) {
+        m_ChainPlatform->BeginFrame();
+
+        auto handleChainPlatform = [&](std::shared_ptr<Util::GameObject> player,
+                                       glm::vec2 oldPos,
+                                       float& velocityY,
+                                       bool& onGround) {
+            if (!player) return;
+
+            glm::vec2 playerPos = player->m_Transform.translation;
+            glm::vec2 playerSize = player->GetScaledSize();
+
+            bool onPlatform = false;
+
+            // 多次修正，避免一幀內穿過
+            for (int i = 0; i < 4; i++) {
+                bool hit = m_ChainPlatform->CheckCollisionWithPlayer(
+                    oldPos,
+                    playerPos,
+                    playerSize,
+                    velocityY
+                );
+
+                if (hit) {
+                    onPlatform = true;
+                }
+            }
+
+            player->m_Transform.translation = playerPos;
+
+            if (onPlatform) {
+                onGround = true;
+            }
+        };
+
+        // 第一次：角色移動後先檢查碰撞
+        handleChainPlatform(m_Ice, oldIcePos, m_IceVelocityY, m_IceOnGround);
+        handleChainPlatform(m_Fire, oldFirePos, m_FireVelocityY, m_FireOnGround);
+
+        // 平台旋轉
+        m_ChainPlatform->Update(1.0f / 60.0f);
+
+        // 第二次：平台旋轉後再檢查一次，避免平台轉進角色身體
+        handleChainPlatform(m_Ice, m_Ice->m_Transform.translation, m_IceVelocityY, m_IceOnGround);
+        handleChainPlatform(m_Fire, m_Fire->m_Transform.translation, m_FireVelocityY, m_FireOnGround);
+    }
 
     if (m_Fan) {
         m_Fan->ApplyWind(m_Ice, m_IceVelocityY, m_IceOnGround);

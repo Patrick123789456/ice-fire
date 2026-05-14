@@ -163,6 +163,29 @@ void App::LoadLevel(int level) {
         m_Root->AddChild(gear2);
 
 
+        // --- 鐵鍊旋轉平台 ---
+        if(level == 1) {
+            m_ChainPlatform = std::make_shared<ChainPlatform>(
+                PIC_PATH + "Lift(1).png",   // 鐵鍊圖片
+                PIC_PATH + "Lift(2).png",   // 平台圖片
+
+                glm::vec2(150.0f, -100.0f),    // 鐵鍊位置
+                glm::vec2(150.0f, -140.0f),     // 平台位置
+
+                glm::vec2(0.3f, 0.3f),      // 鐵鍊縮放
+                glm::vec2(0.3f, 0.3f),      // 平台縮放
+
+                160.0f,                     // 平台碰撞寬度
+                12.0f                       // 平台碰撞高度，先用 12 比較貼圖
+            );
+
+            m_ChainPlatform->SetRotation(0.0f);
+
+            m_Root->AddChild(m_ChainPlatform->GetChainObject());
+            m_Root->AddChild(m_ChainPlatform->GetBoardObject());
+        }
+
+        
         // --- 5. 拉桿 (Switches) ---
         auto sw = std::make_shared<Util::GameObject>(std::make_shared<Util::Image>(PIC_PATH + "switch1_1.png"), -1.5f);
         sw->m_Transform.translation = { -150.0f, -130.0f };
@@ -241,6 +264,12 @@ void App::ClearLevel() {
     };
     cleanup(m_RedDiamond);
     cleanup(m_BlueDiamond);
+
+    if (m_ChainPlatform) {
+        m_Root->RemoveChild(m_ChainPlatform->GetChainObject());
+        m_Root->RemoveChild(m_ChainPlatform->GetBoardObject());
+        m_ChainPlatform = nullptr;
+    }
 
     // 5. 清理斜坡
     for (auto& slope : m_Slopes) {
