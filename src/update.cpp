@@ -80,6 +80,7 @@ void App::Update() {
 
 void App::UpdateAnimations() {
     m_DoorAnimCounter++;
+    // 門動畫
     if (m_DoorAnimCounter >= m_DoorAnimSpeed) {
         m_DoorAnimCounter = 0;
         auto updateDoor = [&](bool opening, int& frame, std::vector<std::string>& frames, std::shared_ptr<Util::GameObject>& door) {
