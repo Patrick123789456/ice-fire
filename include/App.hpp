@@ -17,6 +17,7 @@
 #include "cmath"
 #include "fan.h"
 #include "Util/Animation.hpp"
+#include "chainPlatform.h"
 
 const std::string PIC_PATH = "../Resources/picture/";
 const std::string FONT_PATH = "../Resources/font/";
@@ -136,7 +137,11 @@ private:
 
 
 
-
+    // =====旋轉地板=======================================================
+    bool m_IceOnChainPlatform = false;
+    bool m_FireOnChainPlatform = false;
+    std::shared_ptr<ChainPlatform> m_ChainPlatform;
+    //=====================================================================
 
 
 
