@@ -64,9 +64,8 @@ private:
     float m_RotationDegree = 0.0f;
     float m_AngularVelocity = 0.0f;
 
-    // 360 版本：不要 MaxRotation
     float m_WeightForce = 0.20f;
-    float m_RotationSpeed = 2.0f;
+    float m_RotationSpeed = 1.5f;
     float m_Damping = 0.985f;
     float m_StopThreshold = 0.003f;
 };

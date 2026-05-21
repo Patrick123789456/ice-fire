@@ -243,7 +243,42 @@ void App::HandleMechanics(float iceDx, float fireDx, const Uint8* keys) {
         }
     }
 
-    m_IceOnGround = iG; 
+    // ===== ChainPlatform 碰撞 =====
+    if (m_ChainPlatform) {
+        m_ChainPlatform->BeginFrame();
+
+        glm::vec2 icePos = m_Ice->m_Transform.translation;
+        glm::vec2 firePos = m_Fire->m_Transform.translation;
+
+        bool iceOnChain = m_ChainPlatform->CheckCollisionWithPlayer(
+            m_Ice->m_Transform.translation,
+            icePos,
+            m_Ice->GetScaledSize(),
+            m_IceVelocityY
+        );
+
+        bool fireOnChain = m_ChainPlatform->CheckCollisionWithPlayer(
+            m_Fire->m_Transform.translation,
+            firePos,
+            m_Fire->GetScaledSize(),
+            m_FireVelocityY
+        );
+
+        m_Ice->m_Transform.translation = icePos;
+        m_Fire->m_Transform.translation = firePos;
+
+        if (iceOnChain) {
+            iG = true;
+        }
+
+        if (fireOnChain) {
+            fG = true;
+        }
+
+        m_ChainPlatform->Update(0.0166f);
+    }
+
+    m_IceOnGround = iG;
     m_FireOnGround = fG;
 
     ApplySlopeToPlayer(m_Ice, m_IceVelocityY, m_IceOnGround, iceDx);
