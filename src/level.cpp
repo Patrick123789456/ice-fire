@@ -94,7 +94,7 @@ void App::LoadLevel(int level) {
                     stone->m_Transform.translation = { posX, posY - 7.5f};
                     m_Stones.push_back(stone);
                     m_Root->AddChild(stone);
-                    // 生成火陷阱
+                    // 生成陷阱
                     auto trap = std::make_shared<Util::GameObject>(
                         std::make_shared<Util::Image>(PIC_PATH + "trap.png"), -1.0f
                     );
@@ -108,8 +108,8 @@ void App::LoadLevel(int level) {
 
         // --- 2. 角色位置重置 ---
         // 稍微向右移，避免貼死左邊緣 (-448.5)
-        m_Ice->m_Transform.translation = { -400.0f, -228.0f };
-        m_Fire->m_Transform.translation = { -400.0f, -297.0f };
+        m_Ice->m_Transform.translation = { -350.0f, -190.0f };
+        m_Fire->m_Transform.translation = { -350.0f, -280.0f };
         m_IceVelocityY = 0;
         m_FireVelocityY = 0;
 

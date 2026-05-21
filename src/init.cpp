@@ -23,6 +23,13 @@ void App::Start() {
     m_Root->AddChild(m_Ice);
     m_Root->AddChild(m_Fire);
 
+    for (int i = 1; i <= 8; i++) {
+    m_IceWalkFrames.push_back(PIC_PATH + "ice_walk_r/"+ std::to_string(i) + ".png");
+    m_FireWalkFrames.push_back(PIC_PATH + "fire_walk_r/" + std::to_string(i) + ".png");
+    m_IceWalkFrames_left.push_back(PIC_PATH + "ice_walk_l/"+ std::to_string(i) + ".png");
+    m_FireWalkFrames_left.push_back(PIC_PATH + "fire_walk_l/" + std::to_string(i) + ".png");
+    }
+
     // 3. 陷阱與門 (預先載入，LoadLevel 再改位置)
 
 
@@ -34,6 +41,20 @@ void App::Start() {
     for (int i = 1; i <= 22; i++) {
         m_IceDoorFrames.push_back(PIC_PATH + "ice_door/ice_door" + std::to_string(i) + ".png");
         m_FireDoorFrames.push_back(PIC_PATH + "fire_door/fire_door" + std::to_string(i) + ".png");
+    }
+    // 載入普通綠色陷阱動畫幀 (1.png ~ 10.png)
+    for (int i = 1; i <= 10; i++) {
+        m_TrapFrames.push_back(PIC_PATH + "traps/" + std::to_string(i) + ".png");
+    }
+
+    // 載入冰陷阱動畫幀 (1.png ~ 10.png)
+    for (int i = 1; i <= 10; i++) {
+        m_IceTrapFrames.push_back(PIC_PATH + "ice_traps/" + std::to_string(i) + ".png");
+    }
+
+    // 載入火陷阱動畫幀 (1.png ~ 10.png)
+    for (int i = 1; i <= 10; i++) {
+        m_FireTrapFrames.push_back(PIC_PATH + "fire_traps/" + std::to_string(i) + ".png");
     }
 
 
@@ -51,8 +72,10 @@ void App::Start() {
     m_FirePosText->m_Transform.translation = { 360.0f, UI_Y }; // 原 570 超出範圍
     m_Root->AddChild(m_FirePosText);
 
-    // 分數文字 (居中)
-    m_ScoreText = std::make_shared<Util::GameObject>(std::make_shared<Util::Text>(font, 24, "Score: 0", Util::Color(255, 255, 0)), 10.0f);
+    //計時文字 (置中)
+    m_ScoreText = std::make_shared<Util::GameObject>(
+        std::make_shared<Util::Text>(font, 24, "Time: 00:00", Util::Color(255, 255, 0)), 10.0f
+    );
     m_ScoreText->m_Transform.translation = { 0.0f, UI_Y }; // X 軸保持 0 即可
     m_Root->AddChild(m_ScoreText);
 

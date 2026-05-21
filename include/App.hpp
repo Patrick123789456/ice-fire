@@ -56,6 +56,7 @@ private:
     std::shared_ptr<Util::GameObject> m_Background;
     std::shared_ptr<Util::GameObject> m_Ice;
     std::shared_ptr<Util::GameObject> m_Fire;
+    float m_GameTime = 0.0f;//計時
 
     //=======物理參數====================================================================
     float m_Gravity = 0.4f;
@@ -93,14 +94,45 @@ private:
     // ===== 門 ===============================================================
     std::shared_ptr<Util::GameObject> m_IceDoor;
     std::shared_ptr<Util::GameObject> m_FireDoor;
+
+    bool m_IceDoorOpening = false;
+    bool m_FireDoorOpening = false;
+
+    //=====================================================================
+
+    //=====動畫============================================================
+
+    //門
     std::vector<std::string> m_IceDoorFrames;
     std::vector<std::string> m_FireDoorFrames;
     int m_IceDoorFrameIndex = 0;
     int m_FireDoorFrameIndex = 0;
-    bool m_IceDoorOpening = false;
-    bool m_FireDoorOpening = false;
     int m_DoorAnimCounter = 0;
     int m_DoorAnimSpeed = 2;   // 數字越大，門動畫越慢
+
+    //陷阱
+    std::vector<std::string> m_TrapFrames;
+    std::vector<std::string> m_IceTrapFrames;
+    std::vector<std::string> m_FireTrapFrames;
+    int m_TrapFrameIndex = 0;
+    int m_TrapAnimCounter = 0;
+    int m_TrapAnimSpeed = 5;
+
+
+    //角色
+    std::vector<std::string> m_IceWalkFrames;
+    std::vector<std::string> m_FireWalkFrames;
+    std::vector<std::string> m_IceWalkFrames_left;
+    std::vector<std::string> m_FireWalkFrames_left;
+    int m_IceWalkFrameIndex = 0;
+    int m_FireWalkFrameIndex = 0;
+    int m_PlayerAnimCounter = 0;
+    int m_PlayerAnimSpeed = 3; // 動畫速度，數字越小跑越快
+    bool m_IceIsWalking = false;
+    bool m_FireIsWalking = false;
+    bool m_IceFacingRight = true;
+    bool m_FireFacingRight = true;
+
     //=====================================================================
 
 
